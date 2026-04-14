@@ -154,3 +154,27 @@
   padding: 16px 0;
   margin: 0;
 }
+
+.rlfs-load-more {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+}
+
+.rlfs-load-more:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.rlfs-load-more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

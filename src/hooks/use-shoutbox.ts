@@ -1,0 +1,50 @@
+import { useState } from 'preact/hooks';
+import { fetchShoutboxData, type ShoutboxData } from '@/utils/fetch-shoutbox';
+import { type Shout } from '@/parsers/shout-parser';
+import { type PaginationInfo } from '@/parsers/pagination-parser';
+import { type AuthState } from '@/parsers/auth-parser';
+
+interface UseShoutboxResult {
+  shouts: Shout[];
+  pagination: PaginationInfo | null;
+  authState: AuthState;
+  isLoading: boolean;
+  hasMore: boolean;
+  loadMore: () => Promise<void>;
+}
+
+/**
+ * manages shoutbox state: accumulated shouts & pagination across page loads.
+ * fetchUrl is the base URL without query params (e.g. /user/X/partial/shoutbox)
+ */
+export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseShoutboxResult {
+  const [shouts, setShouts] = useState<Shout[]>(initialData.shouts);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(initialData.pagination);
+  const [authState] = useState<AuthState>(initialData.authState);
+  const [isLoading, setIsLoading] = useState(false);
+
+  /** nextPageUrl is a relative query string like ?page=2 */
+  const hasMore = pagination !== null && pagination.nextPageUrl !== null;
+
+  /** append next page of shouts to accumulated list */
+  async function loadMore(): Promise<void> {
+    if (!hasMore || isLoading) return;
+
+    const nextPageUrl = pagination?.nextPageUrl;
+    if (!nextPageUrl) return;
+
+    setIsLoading(true);
+    try {
+      const nextUrl = fetchUrl + nextPageUrl;
+      const data = await fetchShoutboxData(nextUrl);
+      setShouts((prev) => [...prev, ...data.shouts]);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.warn('useShoutbox: failed to load more shouts', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return { shouts, pagination, authState, isLoading, hasMore, loadMore };
+}

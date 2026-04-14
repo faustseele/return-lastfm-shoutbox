@@ -56,7 +56,7 @@ export default defineContentScript({
       onMount(container) {
         const wrapper = document.createElement('div');
         container.append(wrapper);
-        render(<App shoutboxData={shoutboxData} shoutboxUrl={shoutboxUrl} />, wrapper);
+        render(<App initialData={shoutboxData} fetchUrl={fetchUrl} shoutboxUrl={shoutboxUrl} />, wrapper);
         return wrapper;
       },
       onRemove(wrapper) {
