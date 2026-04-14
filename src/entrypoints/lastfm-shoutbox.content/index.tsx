@@ -119,7 +119,13 @@ export default defineContentScript({
         if (!href) return;
 
         shoutboxUrl = href;
-        fetchUrl = href;
+        /**
+         * derive partial URL for cleaner HTML — full page has template/spacer li elements
+         * that flood the parser with warnings. partial returns just the shoutbox fragment.
+         * /music/X/+shoutbox → /music/X/partial/shoutbox
+         */
+        const basePath = href.replace(/\/\+?shoutbox$/, '');
+        fetchUrl = `${basePath}/partial/shoutbox`;
 
         savedJoinButton = joinButton;
 
@@ -150,7 +156,19 @@ export default defineContentScript({
       }
 
       try {
-        const shoutboxData = await fetchShoutboxData(fetchUrl);
+        let shoutboxData;
+        try {
+          shoutboxData = await fetchShoutboxData(fetchUrl);
+        } catch {
+          /** partial URL might not exist for this entity type — fall back to full page */
+          if (fetchUrl !== shoutboxUrl) {
+            console.warn(`lastfm-shoutbox: partial url failed, falling back to ${shoutboxUrl}`);
+            fetchUrl = shoutboxUrl;
+            shoutboxData = await fetchShoutboxData(fetchUrl);
+          } else {
+            throw new Error('failed to fetch shoutbox');
+          }
+        }
         if (abort.signal.aborted) return;
 
         const ui = await createShadowRootUi(ctx, {
