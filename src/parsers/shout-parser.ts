@@ -58,8 +58,9 @@ function extractShoutText(container: Element): string | null {
   }
   const paragraphs = body.querySelectorAll('p');
   if (paragraphs.length === 0) {
-    console.warn('shout-parser: div.shout-body has no <p> elements', container.id);
-    return null;
+    /** fallback to raw text if Last.fm changes markup to not use <p> tags */
+    console.warn('shout-parser: div.shout-body has no <p> elements, falling back to textContent', container.id);
+    return body.textContent?.trim() ?? '';
   }
   return Array.from(paragraphs)
     .map((p) => p.textContent?.trim() ?? '')
@@ -87,23 +88,19 @@ function parseShoutItem(item: Element): Shout | null {
     return null;
   }
 
+  /** required fields — skip the shout if any of these are missing */
   const author = queryText(container, 'h3.shout-user > a');
   const authorUrl = queryAttr(container, 'h3.shout-user > a', 'href');
-  const avatarUrl = queryAttr(container, 'span.avatar.shout-user-avatar > img', 'src');
   const timestamp = queryAttr(container, 'a.shout-timestamp > time', 'datetime');
-  const relativeTime = queryText(container, 'a.shout-timestamp > time');
   const text = extractShoutText(container);
 
-  if (
-    author === null ||
-    authorUrl === null ||
-    avatarUrl === null ||
-    timestamp === null ||
-    relativeTime === null ||
-    text === null
-  ) {
+  if (author === null || authorUrl === null || timestamp === null || text === null) {
     return null;
   }
+
+  /** cosmetic fields — default to empty string if missing */
+  const avatarUrl = queryAttr(container, 'span.avatar.shout-user-avatar > img', 'src') ?? '';
+  const relativeTime = queryText(container, 'a.shout-timestamp > time') ?? '';
 
   const isReply = id.includes(':comment:');
 
