@@ -11,7 +11,7 @@ interface ShoutListProps {
 /** renders the full list of shouts, or an empty state when there are none */
 export function ShoutList({ shouts, onReply, onVote, onDelete }: ShoutListProps) {
   if (shouts.length === 0) {
-    return <p class="rlfs-empty">No shouts yet</p>;
+    return <p class="rlfs-empty">No shouts yet — be the first to shout!</p>;
   }
 
   return (
