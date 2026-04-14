@@ -57,6 +57,9 @@ export default defineContentScript({
       const abort = new AbortController();
       inFlightAbort = abort;
 
+      /** clear stale status from previous page */
+      await lastStatus.setValue('');
+
       /** clean up previous injection */
       if (currentUi) {
         currentUi.remove();
