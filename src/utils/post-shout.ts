@@ -4,6 +4,8 @@
  * csrfToken: from the page's hidden input
  * body: the shout text
  * throws on failure.
+ * credentials omitted — fetch defaults to 'same-origin' which is correct since
+ * all URLs are relative paths on last.fm and the content script shares the page origin.
  */
 export async function postShout(actionUrl: string, csrfToken: string, body: string): Promise<void> {
   const response = await fetch(actionUrl, {

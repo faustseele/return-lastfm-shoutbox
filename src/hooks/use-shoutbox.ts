@@ -29,7 +29,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
   const [shouts, setShouts] = useState<Shout[]>(initialData.shouts);
   const [pagination, setPagination] = useState<PaginationInfo | null>(initialData.pagination);
   const [authState] = useState<AuthState>(initialData.authState);
-  const [csrfToken] = useState<string | null>(initialData.csrfToken);
+  const [csrfToken, setCsrfToken] = useState<string | null>(initialData.csrfToken);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +52,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
       const data = await fetchShoutboxData(nextUrl);
       setShouts((prev) => [...prev, ...data.shouts]);
       setPagination(data.pagination);
+      if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn('useShoutbox: failed to load more shouts', error);
       setLoadError('Failed to load more shouts. Try again.');
@@ -72,6 +73,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
+      if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn('useShoutbox: failed to post shout', error);
       setSubmitError('Failed to post shout. Try again.');
@@ -92,6 +94,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
+      if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn(`useShoutbox: failed to post reply to shoutId=${shoutId}`, error);
       setSubmitError('Failed to post reply. Try again.');
