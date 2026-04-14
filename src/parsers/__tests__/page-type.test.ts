@@ -73,6 +73,22 @@ describe('detectPageType', () => {
     });
   });
 
+  describe('unicode and special character paths', () => {
+    it('detects artist with literal unicode in name', () => {
+      expect(detectPageType('/music/Björk')).toEqual({
+        type: 'artist',
+        pathname: '/music/Björk',
+      });
+    });
+
+    it('detects user with underscores and numbers', () => {
+      expect(detectPageType('/user/user-name_123')).toEqual({
+        type: 'user',
+        pathname: '/user/user-name_123',
+      });
+    });
+  });
+
   describe('null cases', () => {
     it('returns null for root', () => {
       expect(detectPageType('/')).toBeNull();
@@ -102,6 +118,18 @@ describe('detectPageType', () => {
       expect(detectPageType('/settings')).toBeNull();
     });
 
+    it('returns null for /about', () => {
+      expect(detectPageType('/about')).toBeNull();
+    });
+
+    it('returns null for /inbox', () => {
+      expect(detectPageType('/inbox')).toBeNull();
+    });
+
+    it('returns null for /friends', () => {
+      expect(detectPageType('/friends')).toBeNull();
+    });
+
     it('returns null for artist +shoutbox page', () => {
       expect(detectPageType('/music/Radiohead/+shoutbox')).toBeNull();
     });
@@ -112,6 +140,10 @@ describe('detectPageType', () => {
 
     it('returns null for artist +listeners page', () => {
       expect(detectPageType('/music/Radiohead/+listeners')).toBeNull();
+    });
+
+    it('returns null for generic artist +listeners sub-path', () => {
+      expect(detectPageType('/music/artist/+listeners')).toBeNull();
     });
   });
 

@@ -40,6 +40,27 @@ describe('parsePagination', () => {
     });
   });
 
+  describe('shoutbox-last-page fixture (page 50 of 50, no Next button)', () => {
+    const document = loadFixture('shoutbox-last-page.html');
+    const result = parsePagination(document);
+
+    it('returns a non-null result', () => {
+      expect(result).not.toBeNull();
+    });
+
+    it('extracts currentPage as 50', () => {
+      expect(result?.currentPage).toBe(50);
+    });
+
+    it('extracts totalPages as 50', () => {
+      expect(result?.totalPages).toBe(50);
+    });
+
+    it('returns null for nextPageUrl on last page', () => {
+      expect(result?.nextPageUrl).toBeNull();
+    });
+  });
+
   describe('last page — no Next button, currentPage equals totalPages', () => {
     it('returns null nextPageUrl and correct page numbers', () => {
       const html = `

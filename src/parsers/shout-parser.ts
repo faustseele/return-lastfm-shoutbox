@@ -46,6 +46,28 @@ function queryAttr(container: Element, selector: string, attribute: string): str
 }
 
 /**
+ * join all paragraph elements from div.shout-body into a single trimmed string.
+ * multiple <p> tags are joined with a single space.
+ * returns null when div.shout-body is missing.
+ */
+function extractShoutText(container: Element): string | null {
+  const body = container.querySelector('div.shout-body');
+  if (!body) {
+    console.warn('shout-parser: missing div.shout-body', container.id);
+    return null;
+  }
+  const paragraphs = body.querySelectorAll('p');
+  if (paragraphs.length === 0) {
+    console.warn('shout-parser: div.shout-body has no <p> elements', container.id);
+    return null;
+  }
+  return Array.from(paragraphs)
+    .map((p) => p.textContent?.trim() ?? '')
+    .filter((segment) => segment.length > 0)
+    .join(' ');
+}
+
+/**
  * parse a single li.shout-list-item element into a Shout.
  * scopes field extraction to the item's own div.shout-container to avoid
  * accidentally reading data from deeply nested reply shouts.
@@ -70,7 +92,7 @@ function parseShoutItem(item: Element): Shout | null {
   const avatarUrl = queryAttr(container, 'span.avatar.shout-user-avatar > img', 'src');
   const timestamp = queryAttr(container, 'a.shout-timestamp > time', 'datetime');
   const relativeTime = queryText(container, 'a.shout-timestamp > time');
-  const text = queryText(container, 'div.shout-body > p');
+  const text = extractShoutText(container);
 
   if (
     author === null ||

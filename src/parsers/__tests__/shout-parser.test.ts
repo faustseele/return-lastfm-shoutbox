@@ -133,6 +133,83 @@ describe('parseShouts', () => {
     });
   });
 
+  describe('single shout fixture', () => {
+    const document = loadFixture('shoutbox-single-shout.html');
+    const shouts = parseShouts(document);
+
+    it('returns an array of length 1', () => {
+      expect(shouts).toHaveLength(1);
+    });
+
+    it('parses the shout id correctly', () => {
+      expect(shouts[0].id).toBe('12345678:shoutbox:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
+    });
+
+    it('marks as not a reply', () => {
+      expect(shouts[0].isReply).toBe(false);
+    });
+
+    it('has no replies', () => {
+      expect(shouts[0].replies).toHaveLength(0);
+    });
+  });
+
+  describe('special characters fixture', () => {
+    const document = loadFixture('shoutbox-special-chars.html');
+    const shouts = parseShouts(document);
+
+    it('returns two shouts', () => {
+      expect(shouts).toHaveLength(2);
+    });
+
+    describe('first shout — HTML entities and unicode', () => {
+      it('decodes HTML entities in shout text', () => {
+        /** browser DOMParser decodes &amp; &#39; &lt; etc. before textContent is read */
+        expect(shouts[0].text).toContain('&');
+        expect(shouts[0].text).toContain("'");
+        expect(shouts[0].text).toContain('<');
+      });
+
+      it('preserves unicode characters in shout text', () => {
+        expect(shouts[0].text).toContain('Björk');
+        expect(shouts[0].text).toContain('café');
+        expect(shouts[0].text).toContain('🎵');
+      });
+
+      it('parses author with hyphens and numbers', () => {
+        expect(shouts[0].author).toBe('user-123');
+      });
+
+      it('parses authorUrl with hyphens and numbers', () => {
+        expect(shouts[0].authorUrl).toBe('/user/user-123');
+      });
+    });
+
+    describe('second shout — multi-paragraph body', () => {
+      it('joins multiple paragraphs with a space', () => {
+        expect(shouts[1].text).toBe('first paragraph of the shout second paragraph of the shout');
+      });
+    });
+  });
+
+  describe('missing avatar fixture', () => {
+    const document = loadFixture('shoutbox-no-avatar.html');
+    const shouts = parseShouts(document);
+
+    it('does not skip the shout when img src is empty', () => {
+      expect(shouts).toHaveLength(1);
+    });
+
+    it('returns empty string for avatarUrl', () => {
+      expect(shouts[0].avatarUrl).toBe('');
+    });
+
+    it('still parses author and text correctly', () => {
+      expect(shouts[0].author).toBe('noavataruser');
+      expect(shouts[0].text).toBe('shout from a user with no avatar');
+    });
+  });
+
   describe('edge cases', () => {
     it('returns empty array when no ul.shout-list exists in document', () => {
       const document = new DOMParser().parseFromString('<div></div>', 'text/html');
