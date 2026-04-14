@@ -19,53 +19,31 @@ export interface Shout {
   isDeletable: boolean;
 }
 
-/**
- * extract text from a single required element within a shout container.
- * logs a warning and returns null when the element is missing — allows
- * caller to skip malformed shouts instead of crashing.
- */
+/** extract text from a single element; returns null when missing */
 function queryText(container: Element, selector: string): string | null {
   const element = container.querySelector(selector);
-  if (!element) {
-    console.warn(`shout-parser: missing element for selector "${selector}"`, container.id);
-    return null;
-  }
+  if (!element) return null;
   return element.textContent?.trim() ?? '';
 }
 
-/**
- * extract an attribute from a single required element within a shout container.
- * logs a warning and returns null when the element or attribute is missing.
- */
+/** extract an attribute from a single element; returns null when missing */
 function queryAttr(container: Element, selector: string, attribute: string): string | null {
   const element = container.querySelector(selector);
-  if (!element) {
-    console.warn(`shout-parser: missing element for selector "${selector}"`, container.id);
-    return null;
-  }
+  if (!element) return null;
   const value = element.getAttribute(attribute);
-  if (value === null) {
-    console.warn(`shout-parser: missing attribute "${attribute}" on "${selector}"`, container.id);
-    return null;
-  }
+  if (value === null) return null;
   return value;
 }
 
 /**
  * join all paragraph elements from div.shout-body into a single trimmed string.
- * multiple <p> tags are joined with a single space.
  * returns null when div.shout-body is missing.
  */
 function extractShoutText(container: Element): string | null {
   const body = container.querySelector('div.shout-body');
-  if (!body) {
-    console.warn('shout-parser: missing div.shout-body', container.id);
-    return null;
-  }
+  if (!body) return null;
   const paragraphs = body.querySelectorAll('p');
   if (paragraphs.length === 0) {
-    /** fallback to raw text if Last.fm changes markup to not use <p> tags */
-    console.warn('shout-parser: div.shout-body has no <p> elements, falling back to textContent', container.id);
     return body.textContent?.trim() ?? '';
   }
   return Array.from(paragraphs)
@@ -76,23 +54,17 @@ function extractShoutText(container: Element): string | null {
 
 /**
  * parse a single li.shout-list-item element into a Shout.
- * scopes field extraction to the item's own div.shout-container to avoid
- * accidentally reading data from deeply nested reply shouts.
- * returns null when required fields are missing.
+ * silently returns null for template/spacer items that lack shout content —
+ * the full shoutbox page has these and they're expected, not errors.
  */
 function parseShoutItem(item: Element): Shout | null {
   const id = item.getAttribute('id');
   if (!id) return null;
 
-  /** scope selectors to the direct shout content, not nested replies */
   const container = item.querySelector(':scope > div.shout-container');
   if (!container) return null;
 
-  /** skip template/spacer items that have the container but no actual shout content */
-  const shoutDiv = container.querySelector('div.shout');
-  if (!shoutDiv) return null;
-
-  /** required fields — skip the shout if any of these are missing */
+  /** required fields — skip the item silently if any are missing */
   const author = queryText(container, 'h3.shout-user > a');
   const authorUrl = queryAttr(container, 'h3.shout-user > a', 'href');
   const timestamp = queryAttr(container, 'a.shout-timestamp > time', 'datetime');
@@ -140,7 +112,7 @@ function parseShoutItem(item: Element): Shout | null {
 
 /**
  * parse all li.shout-list-item direct children of a ul.shout-list element.
- * skips items that fail field extraction (already warned inside parseShoutItem).
+ * silently skips items that don't contain actual shout content.
  */
 function parseShoutList(list: Element): Shout[] {
   const items = list.querySelectorAll(':scope > li.shout-list-item');
