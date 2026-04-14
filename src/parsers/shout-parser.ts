@@ -8,6 +8,8 @@ export interface Shout {
   /** human-readable relative time, e.g. "18 hours ago" */
   relativeTime: string;
   text: string;
+  /** relative URL to this shout's permalink page, used as the POST target for replies */
+  permalink: string;
   /** true when the shout ID contains :comment: (vs :shoutbox: for top-level) */
   isReply: boolean;
   replies: Shout[];
@@ -92,9 +94,10 @@ function parseShoutItem(item: Element): Shout | null {
   const author = queryText(container, 'h3.shout-user > a');
   const authorUrl = queryAttr(container, 'h3.shout-user > a', 'href');
   const timestamp = queryAttr(container, 'a.shout-timestamp > time', 'datetime');
+  const permalink = queryAttr(container, 'a.shout-permalink', 'href');
   const text = extractShoutText(container);
 
-  if (author === null || authorUrl === null || timestamp === null || text === null) {
+  if (author === null || authorUrl === null || timestamp === null || permalink === null || text === null) {
     return null;
   }
 
@@ -116,6 +119,7 @@ function parseShoutItem(item: Element): Shout | null {
     timestamp,
     relativeTime,
     text,
+    permalink,
     isReply,
     replies,
   };

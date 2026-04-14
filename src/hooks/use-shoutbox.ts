@@ -17,6 +17,7 @@ interface UseShoutboxResult {
   isSubmitting: boolean;
   submitError: string | null;
   postShout: (text: string) => Promise<void>;
+  postReply: (shoutId: string, permalink: string, text: string) => Promise<void>;
 }
 
 /**
@@ -79,6 +80,26 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
+  /** post a reply to an existing shout, then re-fetch page 1 to get updated reply tree */
+  async function postReply(shoutId: string, permalink: string, text: string): Promise<void> {
+    if (!csrfToken || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await postShoutUtil(permalink, csrfToken, text);
+      /** re-fetch first page to get updated reply tree */
+      const data = await fetchShoutboxData(fetchUrl);
+      setShouts(data.shouts);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.warn(`useShoutbox: failed to post reply to shoutId=${shoutId}`, error);
+      setSubmitError('Failed to post reply. Try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return {
     shouts,
     pagination,
@@ -91,5 +112,6 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     isSubmitting,
     submitError,
     postShout: postShoutHandler,
+    postReply,
   };
 }
