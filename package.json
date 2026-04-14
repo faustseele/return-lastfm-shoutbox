@@ -1,7 +1,7 @@
 {
   "name": "return-lastfm-shoutbox",
   "description": "Brings back inline shouts on Last.fm pages",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",

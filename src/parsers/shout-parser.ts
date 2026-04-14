@@ -13,6 +13,10 @@ export interface Shout {
   /** true when the shout ID contains :comment: (vs :shoutbox: for top-level) */
   isReply: boolean;
   replies: Shout[];
+  /** number of up-votes; cosmetic — defaults to 0 when the vote button is absent */
+  voteCount: number;
+  /** true when the logged-in user owns this shout — detected by presence of form.js-delete-shout */
+  isDeletable: boolean;
 }
 
 /**
@@ -105,6 +109,15 @@ function parseShoutItem(item: Element): Shout | null {
   const avatarUrl = queryAttr(container, 'span.avatar.shout-user-avatar > img', 'src') ?? '';
   const relativeTime = queryText(container, 'a.shout-timestamp > time') ?? '';
 
+  /** vote count from the initially-visible vote button; cosmetic, defaults to 0 */
+  const voteButtonElement = container.querySelector('div.vote-button-wrapper.initially-visible a.vote-button');
+  const voteCountRaw = voteButtonElement?.textContent?.trim() ?? '';
+  const voteCountParsed = parseInt(voteCountRaw, 10);
+  const voteCount = Number.isNaN(voteCountParsed) ? 0 : voteCountParsed;
+
+  /** cosmetic — server only renders this form when the logged-in user owns the shout */
+  const isDeletable = container.querySelector('form.js-delete-shout') !== null;
+
   const isReply = id.includes(':comment:');
 
   /** recursively parse any direct-child reply list */
@@ -122,6 +135,8 @@ function parseShoutItem(item: Element): Shout | null {
     permalink,
     isReply,
     replies,
+    voteCount,
+    isDeletable,
   };
 }
 
