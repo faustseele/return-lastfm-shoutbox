@@ -10,7 +10,8 @@
     "postinstall": "wxt prepare",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "icons:generate": "tsx scripts/resize-icons.ts"
   },
   "dependencies": {
     "preact": "^10.29.1"
@@ -19,6 +20,10 @@
     "@preact/preset-vite": "^2.10.5",
     "@types/jsdom": "^28.0.1",
     "jsdom": "^29.0.2",
+    "node-addon-api": "^8.7.0",
+    "node-gyp": "^12.2.0",
+    "sharp": "^0.34.5",
+    "tsx": "^4.21.0",
     "vitest": "^4.1.4",
     "wxt": "latest"
   }
