@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'preact/hooks';
-import { enabledState } from '@/utils/storage';
+import { enabledState, lastStatus } from '@/utils/storage';
 
-/** popup component — extension on/off toggle */
+/** popup component — extension on/off toggle + status display */
 export function Popup() {
   const [enabled, setEnabled] = useState<boolean>(true);
+  const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
     enabledState.getValue().then(setEnabled);
+    lastStatus.getValue().then(setStatus);
   }, []);
 
-  /** toggle enabled state -> persist to storage & update local state */
   async function handleToggle(): Promise<void> {
     const next = !enabled;
     await enabledState.setValue(next);
     setEnabled(next);
   }
+
+  const isError = status.startsWith('Error:');
 
   return (
     <div class="popup">
@@ -22,6 +25,11 @@ export function Popup() {
       <button class="popup__toggle" onClick={handleToggle}>
         {enabled ? 'Enabled' : 'Disabled'}
       </button>
+      {status && (
+        <div class={`popup__status ${isError ? 'popup__status--error' : ''}`}>
+          {status}
+        </div>
+      )}
     </div>
   );
 }
