@@ -124,6 +124,9 @@ export default defineContentScript({
         savedJoinButton = joinButton;
 
         const container = document.createElement('div');
+        /** show loading indicator immediately while fetching */
+        container.textContent = 'Loading shoutbox...';
+        container.style.cssText = 'padding:12px 0;color:#999;font-size:13px;font-family:sans-serif;';
         joinButton.replaceWith(container);
         anchor = container;
         usedJoinButton = true;
@@ -190,15 +193,11 @@ export default defineContentScript({
           errorIndicator.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
           lazyShoutbox!.insertAdjacentElement('afterend', errorIndicator);
           currentErrorIndicator = errorIndicator;
-        } else if (usedJoinButton && savedJoinButton && createdContainer) {
-          /** restore the original "Join the conversation" button */
-          createdContainer.replaceWith(savedJoinButton);
-
-          const errorIndicator = document.createElement('div');
-          errorIndicator.textContent = 'Shoutbox extension encountered an error';
-          errorIndicator.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
-          savedJoinButton.insertAdjacentElement('afterend', errorIndicator);
-          currentErrorIndicator = errorIndicator;
+        } else if (usedJoinButton && createdContainer) {
+          /** show error inline where the loading indicator was */
+          createdContainer.textContent = `Shoutbox failed to load: ${message}`;
+          createdContainer.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
+          currentErrorIndicator = createdContainer;
         } else if (createdContainer) {
           createdContainer.remove();
         }
