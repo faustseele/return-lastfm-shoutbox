@@ -26,7 +26,7 @@ Only runs on `last.fm` pages. No data collection. No tracking. Open source.
 ## Build from source
 
 ```bash
-git clone https://github.com/user/return-lastfm-shoutbox.git
+git clone https://github.com/faustseele/return-lastfm-shoutbox.git
 cd return-lastfm-shoutbox
 npm install
 npm run dev        # dev mode with HMR
