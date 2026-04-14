@@ -25,6 +25,7 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
     submitError,
     postShout,
     postReply,
+    voteShout,
   } = useShoutbox(initialData, fetchUrl, shoutboxUrl);
 
   return (
@@ -38,7 +39,11 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
         <ShoutForm onSubmit={postShout} isSubmitting={isSubmitting} />
       )}
       {submitError && <div class="rlfs-submit-error">{submitError}</div>}
-      <ShoutList shouts={shouts} onReply={authState === 'logged-in' && csrfToken ? postReply : undefined} />
+      <ShoutList
+        shouts={shouts}
+        onReply={authState === 'logged-in' && csrfToken ? postReply : undefined}
+        onVote={authState === 'logged-in' && csrfToken ? voteShout : undefined}
+      />
       {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}
     </div>

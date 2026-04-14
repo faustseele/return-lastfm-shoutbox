@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { fetchShoutboxData, type ShoutboxData } from '@/utils/fetch-shoutbox';
-import { postShout as postShoutUtil } from '@/utils/post-shout';
+import { postShout as postShoutUtil, postVote as postVoteUtil } from '@/utils/post-shout';
 import { type Shout } from '@/parsers/shout-parser';
 import { type PaginationInfo } from '@/parsers/pagination-parser';
 import { type AuthState } from '@/parsers/auth-parser';
@@ -18,6 +18,7 @@ interface UseShoutboxResult {
   submitError: string | null;
   postShout: (text: string) => Promise<void>;
   postReply: (shoutId: string, permalink: string, text: string) => Promise<void>;
+  voteShout: (permalink: string) => Promise<void>;
 }
 
 /**
@@ -114,6 +115,27 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
+  /** toggle an up-vote on a shout, then re-fetch page 1 to get updated counts */
+  async function voteShout(permalink: string): Promise<void> {
+    if (!csrfToken || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await postVoteUtil(permalink, csrfToken);
+      /** re-fetch first page to reflect updated vote counts */
+      const data = await fetchShoutboxData(fetchUrl);
+      setShouts(data.shouts);
+      setPagination(data.pagination);
+      if (data.csrfToken) setCsrfToken(data.csrfToken);
+    } catch (error) {
+      console.warn(`useShoutbox: failed to vote on permalink=${permalink}`, error);
+      setSubmitError('Failed to vote. Try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return {
     shouts,
     pagination,
@@ -127,5 +149,6 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     submitError,
     postShout: postShoutHandler,
     postReply,
+    voteShout,
   };
 }

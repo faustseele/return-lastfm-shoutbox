@@ -66,6 +66,10 @@ describe('parseShouts', () => {
       it('has no replies', () => {
         expect(shout.replies).toHaveLength(0);
       });
+
+      it('extracts the vote count from the initially-visible vote button', () => {
+        expect(shout.voteCount).toBe(3);
+      });
     });
 
     describe('second top-level shout (homework) with a reply', () => {
@@ -91,6 +95,10 @@ describe('parseShouts', () => {
 
       it('has one reply', () => {
         expect(shout.replies).toHaveLength(1);
+      });
+
+      it('defaults voteCount to 0 when vote button is absent', () => {
+        expect(shout.voteCount).toBe(0);
       });
 
       describe('nested reply (mercuriie)', () => {

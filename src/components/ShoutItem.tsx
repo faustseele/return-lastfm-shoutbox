@@ -5,10 +5,11 @@ interface ShoutItemProps {
   shout: Shout;
   isNested?: boolean;
   onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
+  onVote?: (permalink: string) => Promise<void>;
 }
 
 /** renders a single shout: avatar, username link, relative timestamp, text, and expandable replies */
-export function ShoutItem({ shout, isNested = false, onReply }: ShoutItemProps) {
+export function ShoutItem({ shout, isNested = false, onReply, onVote }: ShoutItemProps) {
   const [repliesExpanded, setRepliesExpanded] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
@@ -60,10 +61,23 @@ export function ShoutItem({ shout, isNested = false, onReply }: ShoutItemProps) 
           </time>
         </div>
         <p class="rlfs-shout__text">{shout.text}</p>
-        {onReply && (
-          <button class="rlfs-shout__reply-btn" type="button" onClick={() => setIsReplying(!isReplying)}>
-            {isReplying ? 'Cancel' : 'Reply'}
-          </button>
+        {(onReply || onVote) && (
+          <div class="rlfs-shout__actions">
+            {onReply && (
+              <button class="rlfs-shout__reply-btn" type="button" onClick={() => setIsReplying(!isReplying)}>
+                {isReplying ? 'Cancel' : 'Reply'}
+              </button>
+            )}
+            {onVote && (
+              <button
+                class="rlfs-shout__vote-btn"
+                type="button"
+                onClick={() => onVote(shout.permalink)}
+              >
+                &#8593; {shout.voteCount}
+              </button>
+            )}
+          </div>
         )}
         {isReplying && (
           <form class="rlfs-shout__reply-form" onSubmit={handleReplySubmit}>
@@ -96,7 +110,7 @@ export function ShoutItem({ shout, isNested = false, onReply }: ShoutItemProps) 
             {repliesExpanded && (
               <div class="rlfs-shout__replies">
                 {shout.replies.map((reply) => (
-                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} />
+                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} onVote={onVote} />
                 ))}
               </div>
             )}
