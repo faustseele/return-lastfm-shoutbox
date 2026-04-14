@@ -12,7 +12,7 @@
     "zip:firefox": "wxt zip -b firefox",
     "test": "vitest run --passWithNoTests",
     "icons:generate": "tsx scripts/resize-icons.ts",
-    "publish:chrome": "chrome-webstore-upload upload --source .output/return-lastfm-shoutbox-0.0.0-chrome.zip --auto-publish",
+    "publish:chrome": "chrome-webstore-upload upload --source \"$(ls .output/*-chrome.zip)\" --auto-publish",
     "publish:firefox": "web-ext sign --source-dir .output/firefox-mv2 --channel listed --api-key $AMO_API_KEY --api-secret $AMO_API_SECRET"
   },
   "dependencies": {

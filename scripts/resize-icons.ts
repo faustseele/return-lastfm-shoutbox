@@ -2,7 +2,8 @@ import sharp from 'sharp';
 import { resolve } from 'path';
 
 const STATIC_DIR = resolve('static');
-const INPUT = resolve(STATIC_DIR, 'logo.png');
+/** source logo lives in assets/ to avoid bundling in extension output */
+const INPUT = resolve('assets', 'logo.png');
 const SIZES = [16, 32, 48, 128];
 
 async function main(): Promise<void> {
