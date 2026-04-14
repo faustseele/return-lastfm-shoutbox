@@ -3,6 +3,7 @@ import preact from '@preact/preset-vite';
 
 export default defineConfig({
   srcDir: 'src',
+  publicDir: 'static',
   manifest: {
     name: 'Return Last.fm Shoutbox',
     description: 'Brings back inline shouts on Last.fm pages',
