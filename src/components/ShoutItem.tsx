@@ -4,17 +4,36 @@ import { type Shout } from '@/parsers/shout-parser';
 interface ShoutItemProps {
   shout: Shout;
   isNested?: boolean;
+  onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
 }
 
 /** renders a single shout: avatar, username link, relative timestamp, text, and expandable replies */
-export function ShoutItem({ shout, isNested = false }: ShoutItemProps) {
+export function ShoutItem({ shout, isNested = false, onReply }: ShoutItemProps) {
   const [repliesExpanded, setRepliesExpanded] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const hasReplies = shout.replies.length > 0;
   const replyCount = shout.replies.length;
   const replyLabel = replyCount === 1 ? '1 reply' : `${replyCount} replies`;
 
   const rootClass = isNested ? 'rlfs-shout rlfs-shout--nested' : 'rlfs-shout';
+
+  /** submit reply -> call onReply, reset form on success */
+  async function handleReplySubmit(event: Event) {
+    event.preventDefault();
+    const trimmed = replyText.trim();
+    if (!trimmed || !onReply || isSubmittingReply) return;
+    setIsSubmittingReply(true);
+    try {
+      await onReply(shout.id, shout.permalink, trimmed);
+      setReplyText('');
+      setIsReplying(false);
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  }
 
   return (
     <div class={rootClass}>
@@ -41,6 +60,30 @@ export function ShoutItem({ shout, isNested = false }: ShoutItemProps) {
           </time>
         </div>
         <p class="rlfs-shout__text">{shout.text}</p>
+        {onReply && (
+          <button class="rlfs-shout__reply-btn" type="button" onClick={() => setIsReplying(!isReplying)}>
+            {isReplying ? 'Cancel' : 'Reply'}
+          </button>
+        )}
+        {isReplying && (
+          <form class="rlfs-shout__reply-form" onSubmit={handleReplySubmit}>
+            <textarea
+              class="rlfs-shout__reply-form-input"
+              placeholder="Write a reply..."
+              value={replyText}
+              onInput={(e) => setReplyText((e.target as HTMLTextAreaElement).value)}
+              disabled={isSubmittingReply}
+              rows={2}
+            />
+            <button
+              class="rlfs-shout__reply-form-submit"
+              type="submit"
+              disabled={replyText.trim().length === 0 || isSubmittingReply}
+            >
+              {isSubmittingReply ? 'Posting...' : 'Reply'}
+            </button>
+          </form>
+        )}
         {hasReplies && (
           <>
             <button
@@ -53,7 +96,7 @@ export function ShoutItem({ shout, isNested = false }: ShoutItemProps) {
             {repliesExpanded && (
               <div class="rlfs-shout__replies">
                 {shout.replies.map((reply) => (
-                  <ShoutItem key={reply.id} shout={reply} isNested={true} />
+                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} />
                 ))}
               </div>
             )}

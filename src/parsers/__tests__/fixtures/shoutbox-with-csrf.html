@@ -1,0 +1,11 @@
+<!doctype html>
+<html>
+<body>
+  <form action="/user/test/shoutbox" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="test-csrf-token-abc123">
+    <textarea name="body"></textarea>
+    <button type="submit">Shout</button>
+  </form>
+  <ul class="shout-list js-shout-list"></ul>
+</body>
+</html>

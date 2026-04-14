@@ -53,6 +53,12 @@ describe('parseShouts', () => {
         expect(shout.text).toBe("hi why can't i edit tracks anymore?");
       });
 
+      it('extracts the permalink href', () => {
+        expect(shout.permalink).toBe(
+          '/user/LAST.HQ/shoutbox/27309121:shoutbox:86084cab-3b07-4dc7-a3ea-f04b6db42803',
+        );
+      });
+
       it('marks top-level shout as not a reply', () => {
         expect(shout.isReply).toBe(false);
       });
@@ -71,6 +77,12 @@ describe('parseShouts', () => {
 
       it('extracts the author', () => {
         expect(shout.author).toBe('homework');
+      });
+
+      it('extracts the permalink href', () => {
+        expect(shout.permalink).toBe(
+          '/user/LAST.HQ/shoutbox/2107690:shoutbox:cd6c2318-3016-46e7-96d5-ce9c38c6d446',
+        );
       });
 
       it('marks as not a reply', () => {
@@ -114,6 +126,12 @@ describe('parseShouts', () => {
           expect(reply.text).toBe('upvote this !!');
         });
 
+        it('extracts the reply permalink href', () => {
+          expect(reply.permalink).toBe(
+            '/user/LAST.HQ/shoutbox/2107690:shoutbox:cd6c2318-3016-46e7-96d5-ce9c38c6d446/2107690:comment:70caf749-9d11-4618-bb55-5ebecb383381#2107690:comment:70caf749-9d11-4618-bb55-5ebecb383381',
+          );
+        });
+
         it('marks the reply isReply as true', () => {
           expect(reply.isReply).toBe(true);
         });
@@ -143,6 +161,12 @@ describe('parseShouts', () => {
 
     it('parses the shout id correctly', () => {
       expect(shouts[0].id).toBe('12345678:shoutbox:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
+    });
+
+    it('extracts the permalink href', () => {
+      expect(shouts[0].permalink).toBe(
+        '/user/LAST.HQ/shoutbox/12345678:shoutbox:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      );
     });
 
     it('marks as not a reply', () => {
@@ -225,7 +249,7 @@ describe('parseShouts', () => {
               <div class="shout">
                 <h3 class="shout-user"><a href="/user/test">test</a></h3>
                 <span class="avatar shout-user-avatar"><img src="https://example.com/img.png"></span>
-                <a class="shout-permalink shout-timestamp">
+                <a class="shout-permalink shout-timestamp" href="/user/test/shoutbox/1:shoutbox:abc">
                   <time datetime="2026-01-01T00:00:00+00:00">  1 hour ago  </time>
                 </a>
                 <div class="shout-body"><p>   hello world   </p></div>

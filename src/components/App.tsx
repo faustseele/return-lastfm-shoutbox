@@ -3,6 +3,7 @@ import { useShoutbox } from '@/hooks/use-shoutbox';
 import { ShoutList } from './ShoutList';
 import { LoadMoreButton } from './LoadMoreButton';
 import { GuestPrompt } from './GuestPrompt';
+import { ShoutForm } from './ShoutForm';
 
 interface AppProps {
   initialData: ShoutboxData;
@@ -12,7 +13,19 @@ interface AppProps {
 
 /** root component */
 export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
-  const { shouts, authState, hasMore, isLoading, loadError, loadMore } = useShoutbox(initialData, fetchUrl);
+  const {
+    shouts,
+    authState,
+    csrfToken,
+    hasMore,
+    isLoading,
+    loadError,
+    loadMore,
+    isSubmitting,
+    submitError,
+    postShout,
+    postReply,
+  } = useShoutbox(initialData, fetchUrl, shoutboxUrl);
 
   return (
     <div class="rlfs-root">
@@ -21,7 +34,11 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
         <span>({shouts.length} shouts loaded)</span>
       </div>
       {authState === 'guest' && <GuestPrompt shoutboxUrl={shoutboxUrl} />}
-      <ShoutList shouts={shouts} />
+      {authState === 'logged-in' && csrfToken && (
+        <ShoutForm onSubmit={postShout} isSubmitting={isSubmitting} />
+      )}
+      {submitError && <div class="rlfs-submit-error">{submitError}</div>}
+      <ShoutList shouts={shouts} onReply={authState === 'logged-in' && csrfToken ? postReply : undefined} />
       {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}
     </div>
