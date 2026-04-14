@@ -204,8 +204,7 @@
   text-decoration: underline;
 }
 
-/** injected into real DOM on fetch/render failure — not inside shadow root */
-.rlfs-error {
+.rlfs-load-error {
   padding: 8px 12px;
   margin: 8px 0;
   font-size: 12px;
@@ -214,5 +213,4 @@
   border: 1px solid #ffe0b2;
   border-radius: 4px;
   text-align: center;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }

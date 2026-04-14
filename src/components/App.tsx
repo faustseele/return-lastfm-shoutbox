@@ -12,7 +12,7 @@ interface AppProps {
 
 /** root component */
 export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
-  const { shouts, authState, hasMore, isLoading, loadMore } = useShoutbox(initialData, fetchUrl);
+  const { shouts, authState, hasMore, isLoading, loadError, loadMore } = useShoutbox(initialData, fetchUrl);
 
   return (
     <div class="rlfs-root">
@@ -22,6 +22,7 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
       </div>
       {authState === 'guest' && <GuestPrompt shoutboxUrl={shoutboxUrl} />}
       <ShoutList shouts={shouts} />
+      {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}
     </div>
   );

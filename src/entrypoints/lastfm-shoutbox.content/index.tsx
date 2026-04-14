@@ -41,7 +41,8 @@ export default defineContentScript({
       lazyShoutbox.innerHTML = '';
 
       fetchUrl = partialUrl;
-      shoutboxUrl = partialUrl;
+      /** derive the real shoutbox page URL by stripping the /partial segment */
+      shoutboxUrl = partialUrl.replace('/partial/', '/');
       anchor = lazyShoutbox;
       usedLazyPath = true;
     } else {
@@ -92,9 +93,10 @@ export default defineContentScript({
           lazyShoutbox!.setAttribute('data-lazy-load-when-on-screen', savedLazyLoadWhenOnScreen);
         }
 
+        /** inline styles since this element lives in the real DOM, not Shadow DOM */
         const errorIndicator = document.createElement('div');
-        errorIndicator.className = 'rlfs-error';
         errorIndicator.textContent = 'Shoutbox extension encountered an error';
+        errorIndicator.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
         lazyShoutbox!.insertAdjacentElement('afterend', errorIndicator);
       } else if (createdContainer) {
         createdContainer.remove();

@@ -10,6 +10,7 @@ interface UseShoutboxResult {
   authState: AuthState;
   isLoading: boolean;
   hasMore: boolean;
+  loadError: string | null;
   loadMore: () => Promise<void>;
 }
 
@@ -22,6 +23,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseSho
   const [pagination, setPagination] = useState<PaginationInfo | null>(initialData.pagination);
   const [authState] = useState<AuthState>(initialData.authState);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   /** nextPageUrl is a relative query string like ?page=2 */
   const hasMore = pagination !== null && pagination.nextPageUrl !== null;
@@ -34,6 +36,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseSho
     if (!nextPageUrl) return;
 
     setIsLoading(true);
+    setLoadError(null);
     try {
       const nextUrl = fetchUrl + nextPageUrl;
       const data = await fetchShoutboxData(nextUrl);
@@ -41,10 +44,11 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseSho
       setPagination(data.pagination);
     } catch (error) {
       console.warn('useShoutbox: failed to load more shouts', error);
+      setLoadError('Failed to load more shouts. Try again.');
     } finally {
       setIsLoading(false);
     }
   }
 
-  return { shouts, pagination, authState, isLoading, hasMore, loadMore };
+  return { shouts, pagination, authState, isLoading, hasMore, loadError, loadMore };
 }
