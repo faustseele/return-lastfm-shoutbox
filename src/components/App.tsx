@@ -3,6 +3,7 @@ import { useShoutbox } from '@/hooks/use-shoutbox';
 import { ShoutList } from './ShoutList';
 import { LoadMoreButton } from './LoadMoreButton';
 import { GuestPrompt } from './GuestPrompt';
+import { ShoutForm } from './ShoutForm';
 
 interface AppProps {
   initialData: ShoutboxData;
@@ -12,7 +13,7 @@ interface AppProps {
 
 /** root component */
 export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
-  const { shouts, authState, hasMore, isLoading, loadError, loadMore } = useShoutbox(initialData, fetchUrl);
+  const { shouts, authState, csrfToken, hasMore, isLoading, loadError, loadMore } = useShoutbox(initialData, fetchUrl);
 
   return (
     <div class="rlfs-root">
@@ -21,6 +22,9 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
         <span>({shouts.length} shouts loaded)</span>
       </div>
       {authState === 'guest' && <GuestPrompt shoutboxUrl={shoutboxUrl} />}
+      {authState === 'logged-in' && csrfToken && (
+        <ShoutForm onSubmit={async () => {}} isSubmitting={false} />
+      )}
       <ShoutList shouts={shouts} />
       {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}

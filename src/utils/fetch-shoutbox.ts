@@ -1,11 +1,13 @@
 import { parseShouts, type Shout } from '@/parsers/shout-parser';
 import { parsePagination, type PaginationInfo } from '@/parsers/pagination-parser';
 import { parseAuthState, type AuthState } from '@/parsers/auth-parser';
+import { parseCsrfToken } from '@/parsers/csrf-parser';
 
 export interface ShoutboxData {
   shouts: Shout[];
   pagination: PaginationInfo | null;
   authState: AuthState;
+  csrfToken: string | null;
 }
 
 /**
@@ -25,5 +27,6 @@ export async function fetchShoutboxData(partialUrl: string): Promise<ShoutboxDat
     shouts: parseShouts(doc),
     pagination: parsePagination(doc),
     authState: parseAuthState(doc),
+    csrfToken: parseCsrfToken(doc),
   };
 }

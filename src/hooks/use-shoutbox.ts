@@ -8,6 +8,7 @@ interface UseShoutboxResult {
   shouts: Shout[];
   pagination: PaginationInfo | null;
   authState: AuthState;
+  csrfToken: string | null;
   isLoading: boolean;
   hasMore: boolean;
   loadError: string | null;
@@ -22,6 +23,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseSho
   const [shouts, setShouts] = useState<Shout[]>(initialData.shouts);
   const [pagination, setPagination] = useState<PaginationInfo | null>(initialData.pagination);
   const [authState] = useState<AuthState>(initialData.authState);
+  const [csrfToken] = useState<string | null>(initialData.csrfToken);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -50,5 +52,5 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string): UseSho
     }
   }
 
-  return { shouts, pagination, authState, isLoading, hasMore, loadError, loadMore };
+  return { shouts, pagination, authState, csrfToken, isLoading, hasMore, loadError, loadMore };
 }
