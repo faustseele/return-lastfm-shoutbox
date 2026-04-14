@@ -4,3 +4,23 @@ body {
   font-family: sans-serif;
   margin: 0;
 }
+
+.popup__title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.popup__toggle {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.popup__toggle:hover {
+  background: #f5f5f5;
+}

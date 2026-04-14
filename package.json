@@ -13,10 +13,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@preact/preset-vite": "^2.10.5",
     "preact": "^10.29.1"
   },
   "devDependencies": {
+    "@preact/preset-vite": "^2.10.5",
     "vitest": "^4.1.4",
     "wxt": "latest"
   }

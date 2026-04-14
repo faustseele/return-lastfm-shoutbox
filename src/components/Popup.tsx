@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'preact/hooks';
 import { enabledState } from '@/utils/storage';
 
-interface PopupProps {}
-
 /** popup component — extension on/off toggle */
-export function Popup(_props: PopupProps): preact.JSX.Element {
+export function Popup() {
   const [enabled, setEnabled] = useState<boolean>(true);
 
   useEffect(() => {
