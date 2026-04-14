@@ -128,7 +128,7 @@
   padding: 0;
   cursor: pointer;
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
 }
 
@@ -267,7 +267,7 @@
 
 .rlfs-shout__actions {
   display: flex;
-  gap: 8px;
+  gap: 11px;
   margin-top: 6px;
   align-items: center;
 }
@@ -278,7 +278,7 @@
   padding: 0;
   cursor: pointer;
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
 }
 

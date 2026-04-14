@@ -76,7 +76,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
               type="button"
               onClick={() => setRepliesExpanded((prev) => !prev)}
             >
-              Reactions {replyCount}
+              {replyCount} {replyCount === 1 ? 'reaction' : 'reactions'}
             </button>
           )}
           {onVote && (
