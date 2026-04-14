@@ -178,3 +178,28 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.rlfs-guest-prompt {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8f8f8;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+.rlfs-guest-prompt p {
+  margin: 0;
+}
+
+.rlfs-guest-prompt a {
+  color: #d51007;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.rlfs-guest-prompt a:hover {
+  text-decoration: underline;
+}
