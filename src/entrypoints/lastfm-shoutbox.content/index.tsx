@@ -210,5 +210,13 @@ export default defineContentScript({
     ctx.addEventListener(window, 'wxt:locationchange', () => {
       injectShoutbox();
     });
+
+    /** listen for reload message from popup */
+    browser.runtime.onMessage.addListener((message: unknown) => {
+      const msg = message as { type?: string };
+      if (msg.type === 'reload-shoutbox') {
+        injectShoutbox();
+      }
+    });
   },
 });
