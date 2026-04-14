@@ -64,24 +64,31 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
           <ShoutActions shout={shout} onDelete={onDelete} />
         </div>
         <p class="rlfs-shout__text">{shout.text}</p>
-        {(onReply || onVote) && (
-          <div class="rlfs-shout__actions">
-            {onReply && (
-              <button class="rlfs-shout__reply-btn" type="button" onClick={() => setIsReplying(!isReplying)}>
-                {isReplying ? 'Cancel' : 'Reply'}
-              </button>
-            )}
-            {onVote && (
-              <button
-                class="rlfs-shout__vote-btn"
-                type="button"
-                onClick={() => onVote(shout.permalink)}
-              >
-                &#8593; {shout.voteCount}
-              </button>
-            )}
-          </div>
-        )}
+        <div class="rlfs-shout__actions">
+          {onReply && (
+            <button class="rlfs-shout__reply-btn" type="button" onClick={() => setIsReplying(!isReplying)}>
+              {isReplying ? 'Cancel' : 'Reply 💬'}
+            </button>
+          )}
+          {hasReplies && (
+            <button
+              class="rlfs-shout__replies-toggle"
+              type="button"
+              onClick={() => setRepliesExpanded((prev) => !prev)}
+            >
+              Reactions {replyCount}
+            </button>
+          )}
+          {onVote && (
+            <button
+              class={`rlfs-shout__vote-btn${shout.voteCount > 0 ? ' rlfs-shout__vote-btn--active' : ''}`}
+              type="button"
+              onClick={() => onVote(shout.permalink)}
+            >
+              ❤️ {shout.voteCount > 0 ? shout.voteCount : ''}
+            </button>
+          )}
+        </div>
         {isReplying && (
           <form class="rlfs-shout__reply-form" onSubmit={handleReplySubmit}>
             <textarea
@@ -101,23 +108,12 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
             </button>
           </form>
         )}
-        {hasReplies && (
-          <>
-            <button
-              class="rlfs-shout__replies-toggle"
-              onClick={() => setRepliesExpanded((prev) => !prev)}
-              type="button"
-            >
-              {replyLabel}
-            </button>
-            {repliesExpanded && (
-              <div class="rlfs-shout__replies">
-                {shout.replies.map((reply) => (
-                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} onVote={onVote} onDelete={onDelete} />
-                ))}
-              </div>
-            )}
-          </>
+        {hasReplies && repliesExpanded && (
+          <div class="rlfs-shout__replies">
+            {shout.replies.map((reply) => (
+              <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} onVote={onVote} onDelete={onDelete} />
+            ))}
+          </div>
         )}
       </div>
     </div>
