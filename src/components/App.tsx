@@ -13,7 +13,18 @@ interface AppProps {
 
 /** root component */
 export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
-  const { shouts, authState, csrfToken, hasMore, isLoading, loadError, loadMore } = useShoutbox(initialData, fetchUrl);
+  const {
+    shouts,
+    authState,
+    csrfToken,
+    hasMore,
+    isLoading,
+    loadError,
+    loadMore,
+    isSubmitting,
+    submitError,
+    postShout,
+  } = useShoutbox(initialData, fetchUrl, shoutboxUrl);
 
   return (
     <div class="rlfs-root">
@@ -23,8 +34,9 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
       </div>
       {authState === 'guest' && <GuestPrompt shoutboxUrl={shoutboxUrl} />}
       {authState === 'logged-in' && csrfToken && (
-        <ShoutForm onSubmit={async () => {}} isSubmitting={false} />
+        <ShoutForm onSubmit={postShout} isSubmitting={isSubmitting} />
       )}
+      {submitError && <div class="rlfs-submit-error">{submitError}</div>}
       <ShoutList shouts={shouts} />
       {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}

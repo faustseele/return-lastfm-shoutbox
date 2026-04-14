@@ -215,6 +215,17 @@
   text-align: center;
 }
 
+.rlfs-submit-error {
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #b35900;
+  background: #fff8f0;
+  border: 1px solid #ffe0b2;
+  border-radius: 4px;
+  text-align: center;
+}
+
 .rlfs-shout-form {
   margin-bottom: 12px;
 }
