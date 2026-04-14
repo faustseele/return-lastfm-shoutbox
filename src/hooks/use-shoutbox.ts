@@ -38,6 +38,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   /** remaining shouts from initial page that weren't shown due to INITIAL_SHOUT_LIMIT */
@@ -117,24 +118,21 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle an up-vote on a shout, then re-fetch page 1 to get updated counts */
+  /** toggle an up-vote — separate from isSubmitting so votes don't block other actions */
   async function voteShout(permalink: string): Promise<void> {
-    if (!csrfToken || isSubmitting) return;
+    if (!csrfToken || isVoting) return;
 
-    setIsSubmitting(true);
-    setSubmitError(null);
+    setIsVoting(true);
     try {
       await postVoteUtil(permalink, csrfToken);
-      /** re-fetch first page to reflect updated vote counts */
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
       if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn(`useShoutbox: failed to vote on permalink=${permalink}`, error);
-      setSubmitError('Failed to vote. Try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsVoting(false);
     }
   }
 

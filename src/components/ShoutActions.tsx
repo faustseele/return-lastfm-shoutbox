@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { type Shout } from '@/parsers/shout-parser';
 
 interface ShoutActionsProps {

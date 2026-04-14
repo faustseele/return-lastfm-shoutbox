@@ -16,8 +16,14 @@ export default defineContentScript({
 
     let currentUi: ShadowRootContentScriptUi<HTMLDivElement> | null = null;
     let currentErrorIndicator: HTMLElement | null = null;
+    let inFlightAbort: AbortController | null = null;
 
     async function injectShoutbox(): Promise<void> {
+      /** abort any in-flight injection from a previous navigation */
+      if (inFlightAbort) inFlightAbort.abort();
+      const abort = new AbortController();
+      inFlightAbort = abort;
+
       /** clean up previous injection */
       if (currentUi) {
         currentUi.remove();
@@ -100,6 +106,7 @@ export default defineContentScript({
 
       try {
         const shoutboxData = await fetchShoutboxData(fetchUrl);
+        if (abort.signal.aborted) return;
 
         const ui = await createShadowRootUi(ctx, {
           name: 'lastfm-shoutbox',
@@ -122,6 +129,7 @@ export default defineContentScript({
         currentUi = ui;
         await lastStatus.setValue(`Active on ${window.location.pathname}`);
       } catch (error) {
+        if (abort.signal.aborted) return;
         console.warn('lastfm-shoutbox: failed to load shoutbox', error);
         const message = error instanceof Error ? error.message : 'unknown error';
         await lastStatus.setValue(`Error: ${message}`);
