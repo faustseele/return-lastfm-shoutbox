@@ -26,6 +26,7 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
     postShout,
     postReply,
     voteShout,
+    deleteShout,
   } = useShoutbox(initialData, fetchUrl, shoutboxUrl);
 
   return (
@@ -43,6 +44,7 @@ export function App({ initialData, fetchUrl, shoutboxUrl }: AppProps) {
         shouts={shouts}
         onReply={authState === 'logged-in' && csrfToken ? postReply : undefined}
         onVote={authState === 'logged-in' && csrfToken ? voteShout : undefined}
+        onDelete={authState === 'logged-in' && csrfToken ? deleteShout : undefined}
       />
       {loadError && <div class="rlfs-load-error">{loadError}</div>}
       {hasMore && <LoadMoreButton isLoading={isLoading} onClick={loadMore} />}

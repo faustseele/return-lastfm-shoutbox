@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { fetchShoutboxData, type ShoutboxData } from '@/utils/fetch-shoutbox';
 import { postShout as postShoutUtil, postVote as postVoteUtil } from '@/utils/post-shout';
+import { deleteShout as deleteShoutUtil } from '@/utils/delete-shout';
 import { type Shout } from '@/parsers/shout-parser';
 import { type PaginationInfo } from '@/parsers/pagination-parser';
 import { type AuthState } from '@/parsers/auth-parser';
@@ -19,6 +20,7 @@ interface UseShoutboxResult {
   postShout: (text: string) => Promise<void>;
   postReply: (shoutId: string, permalink: string, text: string) => Promise<void>;
   voteShout: (permalink: string) => Promise<void>;
+  deleteShout: (permalink: string) => Promise<void>;
 }
 
 /**
@@ -136,6 +138,27 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
+  /** delete a shout, then re-fetch page 1 to remove it from the list */
+  async function deleteShoutHandler(permalink: string): Promise<void> {
+    if (!csrfToken || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await deleteShoutUtil(permalink, csrfToken);
+      /** re-fetch first page to reflect the deleted shout being gone */
+      const data = await fetchShoutboxData(fetchUrl);
+      setShouts(data.shouts);
+      setPagination(data.pagination);
+      if (data.csrfToken) setCsrfToken(data.csrfToken);
+    } catch (error) {
+      console.warn(`useShoutbox: failed to delete shout at permalink=${permalink}`, error);
+      setSubmitError('Failed to delete shout. Try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return {
     shouts,
     pagination,
@@ -150,5 +173,6 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     postShout: postShoutHandler,
     postReply,
     voteShout,
+    deleteShout: deleteShoutHandler,
   };
 }

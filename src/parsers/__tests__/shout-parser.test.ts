@@ -70,6 +70,10 @@ describe('parseShouts', () => {
       it('extracts the vote count from the initially-visible vote button', () => {
         expect(shout.voteCount).toBe(3);
       });
+
+      it('marks isDeletable as true when delete form is present', () => {
+        expect(shout.isDeletable).toBe(true);
+      });
     });
 
     describe('second top-level shout (homework) with a reply', () => {
@@ -99,6 +103,10 @@ describe('parseShouts', () => {
 
       it('defaults voteCount to 0 when vote button is absent', () => {
         expect(shout.voteCount).toBe(0);
+      });
+
+      it('marks isDeletable as false when delete form is absent', () => {
+        expect(shout.isDeletable).toBe(false);
       });
 
       describe('nested reply (mercuriie)', () => {

@@ -1,15 +1,17 @@
 import { useState } from 'preact/hooks';
 import { type Shout } from '@/parsers/shout-parser';
+import { ShoutActions } from './ShoutActions';
 
 interface ShoutItemProps {
   shout: Shout;
   isNested?: boolean;
   onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
   onVote?: (permalink: string) => Promise<void>;
+  onDelete?: (permalink: string) => Promise<void>;
 }
 
 /** renders a single shout: avatar, username link, relative timestamp, text, and expandable replies */
-export function ShoutItem({ shout, isNested = false, onReply, onVote }: ShoutItemProps) {
+export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }: ShoutItemProps) {
   const [repliesExpanded, setRepliesExpanded] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
@@ -59,6 +61,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote }: ShoutIte
           <time class="rlfs-shout__time" dateTime={shout.timestamp}>
             {shout.relativeTime}
           </time>
+          <ShoutActions shout={shout} onDelete={onDelete} />
         </div>
         <p class="rlfs-shout__text">{shout.text}</p>
         {(onReply || onVote) && (
@@ -110,7 +113,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote }: ShoutIte
             {repliesExpanded && (
               <div class="rlfs-shout__replies">
                 {shout.replies.map((reply) => (
-                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} onVote={onVote} />
+                  <ShoutItem key={reply.id} shout={reply} isNested={true} onReply={onReply} onVote={onVote} onDelete={onDelete} />
                 ))}
               </div>
             )}
