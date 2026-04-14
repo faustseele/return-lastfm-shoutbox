@@ -40,7 +40,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
 
   return (
     <div class={rootClass}>
-      <div class="rlfs-shout__avatar-col">
+      <a class="rlfs-shout__avatar-col" href={shout.authorUrl}>
         {shout.avatarUrl ? (
           <img
             class="rlfs-shout__avatar"
@@ -52,7 +52,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
             {shout.author.charAt(0).toUpperCase()}
           </div>
         )}
-      </div>
+      </a>
       <div class="rlfs-shout__content">
         <div class="rlfs-shout__header">
           <a class="rlfs-shout__author" href={shout.authorUrl}>
