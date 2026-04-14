@@ -25,8 +25,10 @@ interface UseShoutboxResult {
  * fetchUrl is the base URL without query params (e.g. /user/X/partial/shoutbox)
  * shoutboxUrl is the POST target (e.g. /user/X/shoutbox)
  */
+const INITIAL_SHOUT_LIMIT = 10;
+
 export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutboxUrl: string): UseShoutboxResult {
-  const [shouts, setShouts] = useState<Shout[]>(initialData.shouts);
+  const [shouts, setShouts] = useState<Shout[]>(initialData.shouts.slice(0, INITIAL_SHOUT_LIMIT));
   const [pagination, setPagination] = useState<PaginationInfo | null>(initialData.pagination);
   const [authState] = useState<AuthState>(initialData.authState);
   const [csrfToken, setCsrfToken] = useState<string | null>(initialData.csrfToken);
@@ -35,12 +37,21 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  /** nextPageUrl is a relative query string like ?page=2 */
-  const hasMore = pagination !== null && pagination.nextPageUrl !== null;
+  /** remaining shouts from initial page that weren't shown due to INITIAL_SHOUT_LIMIT */
+  const [remainingFromFirstPage] = useState<Shout[]>(initialData.shouts.slice(INITIAL_SHOUT_LIMIT));
 
-  /** append next page of shouts to accumulated list */
+  const hasMoreFromFirstPage = remainingFromFirstPage.length > 0 && shouts.length <= INITIAL_SHOUT_LIMIT;
+  const hasMorePages = pagination !== null && pagination.nextPageUrl !== null;
+  const hasMore = hasMoreFromFirstPage || hasMorePages;
+
+  /** append more shouts — first drain the sliced remainder, then fetch next pages */
   async function loadMore(): Promise<void> {
     if (!hasMore || isLoading) return;
+
+    if (hasMoreFromFirstPage) {
+      setShouts((prev) => [...prev, ...remainingFromFirstPage]);
+      return;
+    }
 
     const nextPageUrl = pagination?.nextPageUrl;
     if (!nextPageUrl) return;
