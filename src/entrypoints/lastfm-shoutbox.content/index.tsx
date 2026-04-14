@@ -6,6 +6,39 @@ import { fetchShoutboxData } from '@/utils/fetch-shoutbox';
 import { detectPageType } from '@/parsers/page-type';
 import { resolveShoutboxUrl } from '@/parsers/shoutbox-url';
 
+/** wait for a DOM element to appear, using MutationObserver with a timeout */
+function waitForElement(selector: string, timeoutMs: number, signal: AbortSignal): Promise<Element | null> {
+  return new Promise((resolve) => {
+    const existing = document.querySelector(selector);
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        observer.disconnect();
+        clearTimeout(timeout);
+        resolve(element);
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      observer.disconnect();
+      resolve(null);
+    }, timeoutMs);
+
+    signal.addEventListener('abort', () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+      resolve(null);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+}
+
 export default defineContentScript({
   matches: ['*://*.last.fm/*'],
   cssInjectionMode: 'ui',
@@ -52,7 +85,13 @@ export default defineContentScript({
       let createdContainer: Element | null = null;
 
       const lazyShoutbox = document.querySelector('div#shoutbox[data-lazy-load-content]');
-      const joinButton = document.querySelector('a.btn-shouts-join');
+      let joinButton = document.querySelector('a.btn-shouts-join');
+
+      /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
+      if (!lazyShoutbox && !joinButton && pageInfo) {
+        joinButton = await waitForElement('a.btn-shouts-join', 5000, abort.signal);
+        if (abort.signal.aborted) return;
+      }
 
       if (lazyShoutbox) {
         /** user pages (legacy) — intercept the lazy-loader */
