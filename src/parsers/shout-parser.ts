@@ -82,17 +82,15 @@ function extractShoutText(container: Element): string | null {
  */
 function parseShoutItem(item: Element): Shout | null {
   const id = item.getAttribute('id');
-  if (!id) {
-    console.warn('shout-parser: shout-list-item has no id, skipping');
-    return null;
-  }
+  if (!id) return null;
 
   /** scope selectors to the direct shout content, not nested replies */
   const container = item.querySelector(':scope > div.shout-container');
-  if (!container) {
-    console.warn(`shout-parser: no div.shout-container found for shout id=${id}`);
-    return null;
-  }
+  if (!container) return null;
+
+  /** skip template/spacer items that have the container but no actual shout content */
+  const shoutDiv = container.querySelector('div.shout');
+  if (!shoutDiv) return null;
 
   /** required fields — skip the shout if any of these are missing */
   const author = queryText(container, 'h3.shout-user > a');

@@ -119,7 +119,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle an up-vote — separate from isSubmitting so votes don't block other actions */
+  /** toggle an up-vote, then re-fetch to get actual server state */
   async function voteShout(permalink: string): Promise<void> {
     if (!csrfToken || isVoting) return;
 
@@ -137,7 +137,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** delete a shout — separate from isSubmitting so it doesn't show "Posting..." on ShoutForm */
+  /** delete a shout, then re-fetch to get actual server state */
   async function deleteShoutHandler(permalink: string): Promise<void> {
     if (!csrfToken || isDeleting) return;
 
