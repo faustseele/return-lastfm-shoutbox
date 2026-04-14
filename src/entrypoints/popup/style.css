@@ -25,6 +25,22 @@ body {
   background: #f5f5f5;
 }
 
+.popup__reload {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+}
+
+.popup__reload:hover {
+  background: #f5f5f5;
+}
+
 .popup__status {
   margin-top: 10px;
   padding: 6px 8px;

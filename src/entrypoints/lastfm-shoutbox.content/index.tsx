@@ -6,6 +6,39 @@ import { fetchShoutboxData } from '@/utils/fetch-shoutbox';
 import { detectPageType } from '@/parsers/page-type';
 import { resolveShoutboxUrl } from '@/parsers/shoutbox-url';
 
+/** wait for a DOM element to appear, using MutationObserver with a timeout */
+function waitForElement(selector: string, timeoutMs: number, signal: AbortSignal): Promise<Element | null> {
+  return new Promise((resolve) => {
+    const existing = document.querySelector(selector);
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        observer.disconnect();
+        clearTimeout(timeout);
+        resolve(element);
+      }
+    });
+
+    const timeout = setTimeout(() => {
+      observer.disconnect();
+      resolve(null);
+    }, timeoutMs);
+
+    signal.addEventListener('abort', () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+      resolve(null);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+}
+
 export default defineContentScript({
   matches: ['*://*.last.fm/*'],
   cssInjectionMode: 'ui',
@@ -23,6 +56,9 @@ export default defineContentScript({
       if (inFlightAbort) inFlightAbort.abort();
       const abort = new AbortController();
       inFlightAbort = abort;
+
+      /** clear stale status from previous page */
+      await lastStatus.setValue('');
 
       /** clean up previous injection */
       if (currentUi) {
@@ -52,7 +88,13 @@ export default defineContentScript({
       let createdContainer: Element | null = null;
 
       const lazyShoutbox = document.querySelector('div#shoutbox[data-lazy-load-content]');
-      const joinButton = document.querySelector('a.btn-shouts-join');
+      let joinButton = document.querySelector('a.btn-shouts-join');
+
+      /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
+      if (!lazyShoutbox && !joinButton && pageInfo) {
+        joinButton = await waitForElement('a.btn-shouts-join', 5000, abort.signal);
+        if (abort.signal.aborted) return;
+      }
 
       if (lazyShoutbox) {
         /** user pages (legacy) — intercept the lazy-loader */
@@ -82,6 +124,9 @@ export default defineContentScript({
         savedJoinButton = joinButton;
 
         const container = document.createElement('div');
+        /** show loading indicator immediately while fetching */
+        container.textContent = 'Loading shoutbox...';
+        container.style.cssText = 'padding:12px 0;color:#999;font-size:13px;font-family:sans-serif;';
         joinButton.replaceWith(container);
         anchor = container;
         usedJoinButton = true;
@@ -148,15 +193,11 @@ export default defineContentScript({
           errorIndicator.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
           lazyShoutbox!.insertAdjacentElement('afterend', errorIndicator);
           currentErrorIndicator = errorIndicator;
-        } else if (usedJoinButton && savedJoinButton && createdContainer) {
-          /** restore the original "Join the conversation" button */
-          createdContainer.replaceWith(savedJoinButton);
-
-          const errorIndicator = document.createElement('div');
-          errorIndicator.textContent = 'Shoutbox extension encountered an error';
-          errorIndicator.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
-          savedJoinButton.insertAdjacentElement('afterend', errorIndicator);
-          currentErrorIndicator = errorIndicator;
+        } else if (usedJoinButton && createdContainer) {
+          /** show error inline where the loading indicator was */
+          createdContainer.textContent = `Shoutbox failed to load: ${message}`;
+          createdContainer.style.cssText = 'padding:8px 12px;margin:8px 0;font-size:12px;color:#b35900;background:#fff8f0;border:1px solid #ffe0b2;border-radius:4px;text-align:center;font-family:sans-serif;';
+          currentErrorIndicator = createdContainer;
         } else if (createdContainer) {
           createdContainer.remove();
         }
@@ -168,6 +209,14 @@ export default defineContentScript({
     /** re-inject on client-side navigation — wxt:locationchange catches pushState/replaceState */
     ctx.addEventListener(window, 'wxt:locationchange', () => {
       injectShoutbox();
+    });
+
+    /** listen for reload message from popup */
+    browser.runtime.onMessage.addListener((message: unknown) => {
+      const msg = message as { type?: string };
+      if (msg.type === 'reload-shoutbox') {
+        injectShoutbox();
+      }
     });
   },
 });

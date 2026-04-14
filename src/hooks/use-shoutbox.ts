@@ -39,6 +39,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   /** remaining shouts from initial page that weren't shown due to INITIAL_SHOUT_LIMIT */
@@ -136,15 +137,13 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** delete a shout, then re-fetch page 1 to remove it from the list */
+  /** delete a shout — separate from isSubmitting so it doesn't show "Posting..." on ShoutForm */
   async function deleteShoutHandler(permalink: string): Promise<void> {
-    if (!csrfToken || isSubmitting) return;
+    if (!csrfToken || isDeleting) return;
 
-    setIsSubmitting(true);
-    setSubmitError(null);
+    setIsDeleting(true);
     try {
       await deleteShoutUtil(permalink, csrfToken);
-      /** re-fetch first page to reflect the deleted shout being gone */
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
@@ -153,7 +152,7 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
       console.warn(`useShoutbox: failed to delete shout at permalink=${permalink}`, error);
       setSubmitError('Failed to delete shout. Try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsDeleting(false);
     }
   }
 
