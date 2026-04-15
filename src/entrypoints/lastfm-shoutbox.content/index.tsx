@@ -74,7 +74,7 @@ export default defineContentScript({
 
       /** skip user pages — they already have inline shoutboxes */
       const pageInfo = detectPageType(window.location.pathname);
-      if (pageInfo?.type === 'user') return;
+      if (pageInfo?.type === 'user') { console.log('[rlfs] user page, skipping'); return; }
 
       let anchor: Element;
       let fetchUrl: string;
@@ -91,11 +91,14 @@ export default defineContentScript({
 
       const lazyShoutbox = document.querySelector('div#shoutbox[data-lazy-load-content]');
       let joinButton = document.querySelector('a.btn-shouts-join');
+      console.log('[rlfs] lazyShoutbox:', !!lazyShoutbox, 'joinButton:', !!joinButton);
 
       /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
       if (!lazyShoutbox && !joinButton && pageInfo) {
+        console.log('[rlfs] waiting for a.btn-shouts-join via MutationObserver...');
         joinButton = await waitForElement('a.btn-shouts-join', 5000, abort.signal);
-        if (abort.signal.aborted) return;
+        console.log('[rlfs] MutationObserver result:', !!joinButton);
+        if (abort.signal.aborted) { console.log('[rlfs] aborted during wait'); return; }
       }
 
       if (lazyShoutbox) {
