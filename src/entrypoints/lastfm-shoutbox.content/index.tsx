@@ -52,6 +52,9 @@ export default defineContentScript({
     let inFlightAbort: AbortController | null = null;
 
     async function injectShoutbox(): Promise<void> {
+      /** bail if extension was reloaded — old context can't create shadow DOM */
+      if (!ctx.isValid) return;
+
       /** abort any in-flight injection from a previous navigation */
       if (inFlightAbort) inFlightAbort.abort();
       const abort = new AbortController();
