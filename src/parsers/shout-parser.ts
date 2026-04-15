@@ -80,7 +80,8 @@ function parseShoutItem(item: Element): Shout | null {
   const relativeTime = queryText(container, 'a.shout-timestamp > time') ?? '';
 
   /** vote count from the initially-visible vote button; cosmetic, defaults to 0 */
-  const voteButtonElement = container.querySelector('div.vote-button-wrapper.initially-visible a.vote-button');
+  /** matches both <a> (guest view) and <button> (authenticated view) */
+  const voteButtonElement = container.querySelector('div.vote-button-wrapper.initially-visible .vote-button');
   const voteCountRaw = voteButtonElement?.textContent?.trim() ?? '';
   const voteCountParsed = parseInt(voteCountRaw, 10);
   const voteCount = Number.isNaN(voteCountParsed) ? 0 : voteCountParsed;
