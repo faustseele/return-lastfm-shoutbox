@@ -207,9 +207,14 @@ export default defineContentScript({
 
     await injectShoutbox();
 
-    /** re-inject on client-side navigation — wxt:locationchange catches pushState/replaceState */
+    /**
+     * re-inject on client-side navigation — debounce 300ms to let Last.fm's pjax
+     * finish swapping the DOM before we look for the join button
+     */
+    let navTimeout: ReturnType<typeof setTimeout>;
     ctx.addEventListener(window, 'wxt:locationchange', () => {
-      injectShoutbox();
+      clearTimeout(navTimeout);
+      navTimeout = setTimeout(() => injectShoutbox(), 300);
     });
 
     /** listen for reload message from popup */

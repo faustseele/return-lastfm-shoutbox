@@ -85,13 +85,17 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
               type="button"
               onClick={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
+                /** instant visual feedback — toggle heart + animation before server roundtrip */
                 btn.classList.remove('rlfs-shout__vote-btn--pulse');
                 void btn.offsetWidth;
                 btn.classList.add('rlfs-shout__vote-btn--pulse');
+                btn.classList.toggle('rlfs-shout__vote-btn--active');
+                const heart = btn.querySelector('.rlfs-shout__vote-heart');
+                if (heart) heart.textContent = shout.hasVoted ? '🤎' : '❤️';
                 onVote(shout.permalink, shout.hasVoted);
               }}
             >
-              {shout.hasVoted ? '❤️' : '🤎'} {shout.voteCount > 0 ? shout.voteCount : ''}
+              <span class="rlfs-shout__vote-heart">{shout.hasVoted ? '❤️' : '🤎'}</span> {shout.voteCount > 0 ? shout.voteCount : ''}
             </button>
           )}
         </div>
