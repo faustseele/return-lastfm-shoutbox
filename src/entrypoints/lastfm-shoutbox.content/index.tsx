@@ -44,16 +44,14 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
 
   async main(ctx: ContentScriptContext): Promise<void> {
-    console.log('[rlfs] main() started on', window.location.href);
     const isEnabled = await enabledState.getValue();
-    if (!isEnabled) { console.log('[rlfs] disabled, exiting'); return; }
+    if (!isEnabled) return;
 
     let currentUi: ShadowRootContentScriptUi<HTMLDivElement> | null = null;
     let currentErrorIndicator: HTMLElement | null = null;
     let inFlightAbort: AbortController | null = null;
 
     async function injectShoutbox(): Promise<void> {
-      console.log('[rlfs] injectShoutbox() called for', window.location.pathname);
       /** abort any in-flight injection from a previous navigation */
       if (inFlightAbort) inFlightAbort.abort();
       const abort = new AbortController();
@@ -74,7 +72,7 @@ export default defineContentScript({
 
       /** skip user pages — they already have inline shoutboxes */
       const pageInfo = detectPageType(window.location.pathname);
-      if (pageInfo?.type === 'user') { console.log('[rlfs] user page, skipping'); return; }
+      if (pageInfo?.type === 'user') return;
 
       let anchor: Element;
       let fetchUrl: string;
@@ -96,14 +94,11 @@ export default defineContentScript({
       const isUserUrl = window.location.pathname.startsWith('/user/');
       const lazyShoutbox = isUserUrl ? document.querySelector('div#shoutbox[data-lazy-load-content]') : null;
       let joinButton = document.querySelector('a.btn-shouts-join');
-      console.log('[rlfs] isUserUrl:', isUserUrl, 'lazyShoutbox:', !!lazyShoutbox, 'joinButton:', !!joinButton);
 
       /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
       if (!lazyShoutbox && !joinButton && pageInfo) {
-        console.log('[rlfs] waiting for a.btn-shouts-join via MutationObserver...');
         joinButton = await waitForElement('a.btn-shouts-join', 5000, abort.signal);
-        console.log('[rlfs] MutationObserver result:', !!joinButton);
-        if (abort.signal.aborted) { console.log('[rlfs] aborted during wait'); return; }
+        if (abort.signal.aborted) return;
       }
 
       if (lazyShoutbox) {
@@ -228,18 +223,12 @@ export default defineContentScript({
     const urlPoll = setInterval(() => {
       const currentUrl = window.location.href;
       if (currentUrl !== lastUrl) {
-        console.log('[rlfs] URL changed:', lastUrl, '->', currentUrl);
         lastUrl = currentUrl;
         clearTimeout(navTimeout);
         navTimeout = setTimeout(() => injectShoutbox(), 500);
       }
     }, 300);
-    ctx.onInvalidated(() => {
-      console.log('[rlfs] context invalidated, stopping poll');
-      pollAlive = false;
-      clearInterval(urlPoll);
-    });
-    console.log('[rlfs] poll started, initial URL:', lastUrl);
+    ctx.onInvalidated(() => clearInterval(urlPoll));
 
     /** listen for reload message from popup */
     browser.runtime.onMessage.addListener((message: unknown) => {
