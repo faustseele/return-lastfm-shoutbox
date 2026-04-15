@@ -6,7 +6,7 @@ interface ShoutItemProps {
   shout: Shout;
   isNested?: boolean;
   onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
-  onVote?: (permalink: string) => Promise<void>;
+  onVote?: (permalink: string, hasVoted: boolean) => Promise<void>;
   onDelete?: (permalink: string) => Promise<void>;
 }
 
@@ -81,17 +81,17 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
           )}
           {onVote && (
             <button
-              class={`rlfs-shout__vote-btn${shout.voteCount > 0 ? ' rlfs-shout__vote-btn--active' : ''}`}
+              class={`rlfs-shout__vote-btn${shout.hasVoted ? ' rlfs-shout__vote-btn--active' : ''}`}
               type="button"
               onClick={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.classList.remove('rlfs-shout__vote-btn--pulse');
                 void btn.offsetWidth;
                 btn.classList.add('rlfs-shout__vote-btn--pulse');
-                onVote(shout.permalink);
+                onVote(shout.permalink, shout.hasVoted);
               }}
             >
-              ❤️ {shout.voteCount > 0 ? shout.voteCount : ''}
+              {shout.hasVoted ? '❤️' : '🤎'} {shout.voteCount > 0 ? shout.voteCount : ''}
             </button>
           )}
         </div>

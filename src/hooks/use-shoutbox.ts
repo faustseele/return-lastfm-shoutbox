@@ -19,7 +19,7 @@ interface UseShoutboxResult {
   submitError: string | null;
   postShout: (text: string) => Promise<void>;
   postReply: (shoutId: string, permalink: string, text: string) => Promise<void>;
-  voteShout: (permalink: string) => Promise<void>;
+  voteShout: (permalink: string, hasVoted: boolean) => Promise<void>;
   deleteShout: (permalink: string) => Promise<void>;
 }
 
@@ -119,13 +119,13 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle vote, then re-fetch to get actual server state */
-  async function voteShout(permalink: string): Promise<void> {
+  /** toggle vote (upvote or downvote based on current state), then re-fetch */
+  async function voteShout(permalink: string, hasVoted: boolean): Promise<void> {
     if (!csrfToken || isVoting) return;
 
     setIsVoting(true);
     try {
-      await postVoteUtil(permalink, csrfToken);
+      await postVoteUtil(permalink, csrfToken, hasVoted);
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
