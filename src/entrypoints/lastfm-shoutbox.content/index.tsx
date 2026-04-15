@@ -89,9 +89,14 @@ export default defineContentScript({
       let savedJoinButton: Element | null = null;
       let createdContainer: Element | null = null;
 
-      const lazyShoutbox = document.querySelector('div#shoutbox[data-lazy-load-content]');
+      /**
+       * only use the lazy-load container if we're actually on a user page URL —
+       * during pjax navigation, stale DOM from the previous page can linger
+       */
+      const isUserUrl = window.location.pathname.startsWith('/user/');
+      const lazyShoutbox = isUserUrl ? document.querySelector('div#shoutbox[data-lazy-load-content]') : null;
       let joinButton = document.querySelector('a.btn-shouts-join');
-      console.log('[rlfs] lazyShoutbox:', !!lazyShoutbox, 'joinButton:', !!joinButton);
+      console.log('[rlfs] isUserUrl:', isUserUrl, 'lazyShoutbox:', !!lazyShoutbox, 'joinButton:', !!joinButton);
 
       /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
       if (!lazyShoutbox && !joinButton && pageInfo) {
