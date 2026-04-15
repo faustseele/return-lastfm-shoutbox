@@ -57,8 +57,8 @@ export default defineContentScript({
       const abort = new AbortController();
       inFlightAbort = abort;
 
-      /** clear stale status from previous page */
-      await lastStatus.setValue('');
+      /** clear stale status — wrapped in try/catch since context can be invalidated on extension reload */
+      try { await lastStatus.setValue(''); } catch { return; }
 
       /** clean up previous injection */
       if (currentUi) {
@@ -173,12 +173,12 @@ export default defineContentScript({
 
         ui.mount();
         currentUi = ui;
-        await lastStatus.setValue(`Active on ${window.location.pathname}`);
+        try { await lastStatus.setValue(`Active on ${window.location.pathname}`); } catch {}
       } catch (error) {
         if (abort.signal.aborted) return;
         console.warn('lastfm-shoutbox: failed to load shoutbox', error);
         const message = error instanceof Error ? error.message : 'unknown error';
-        await lastStatus.setValue(`Error: ${message}`);
+        try { await lastStatus.setValue(`Error: ${message}`); } catch {}
 
         if (usedLazyPath) {
           /** restore original container so Last.fm's native lazy-loader can take over */
