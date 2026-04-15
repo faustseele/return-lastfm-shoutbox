@@ -40,6 +40,7 @@ export async function postVote(actionUrl: string, csrfToken: string): Promise<vo
     },
     body: new URLSearchParams({
       csrfmiddlewaretoken: csrfToken,
+      submit_action: 'upvote',
     }),
   });
 
