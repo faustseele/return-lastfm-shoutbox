@@ -83,7 +83,13 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
             <button
               class={`rlfs-shout__vote-btn${shout.voteCount > 0 ? ' rlfs-shout__vote-btn--active' : ''}`}
               type="button"
-              onClick={() => onVote(shout.permalink)}
+              onClick={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.classList.remove('rlfs-shout__vote-btn--pulse');
+                void btn.offsetWidth;
+                btn.classList.add('rlfs-shout__vote-btn--pulse');
+                onVote(shout.permalink);
+              }}
             >
               ❤️ {shout.voteCount > 0 ? shout.voteCount : ''}
             </button>

@@ -294,12 +294,15 @@
   color: #999;
   font-size: 14px;
   font-family: inherit;
-  opacity: 0.5;
-  transition: opacity 0.2s, transform 0.2s;
+  opacity: 0.7;
+  transition: opacity 0.3s ease, transform 0.3s ease, color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .rlfs-shout__vote-btn:hover {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .rlfs-shout__vote-btn--active {
@@ -307,13 +310,13 @@
   opacity: 1;
 }
 
-.rlfs-shout__vote-btn:active {
-  animation: rlfs-heart-pulse 0.3s ease;
+.rlfs-shout__vote-btn--pulse {
+  animation: rlfs-heart-pulse 0.4s ease;
 }
 
 @keyframes rlfs-heart-pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
+  30% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
 

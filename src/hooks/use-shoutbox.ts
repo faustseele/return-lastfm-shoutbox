@@ -6,6 +6,19 @@ import { type Shout } from '@/parsers/shout-parser';
 import { type PaginationInfo } from '@/parsers/pagination-parser';
 import { type AuthState } from '@/parsers/auth-parser';
 
+/** recursively update a shout's voteCount by permalink */
+function incrementVote(shouts: Shout[], permalink: string): Shout[] {
+  return shouts.map((shout) => {
+    if (shout.permalink === permalink) {
+      return { ...shout, voteCount: shout.voteCount + 1 };
+    }
+    if (shout.replies.length > 0) {
+      return { ...shout, replies: incrementVote(shout.replies, permalink) };
+    }
+    return shout;
+  });
+}
+
 interface UseShoutboxResult {
   shouts: Shout[];
   pagination: PaginationInfo | null;
@@ -119,17 +132,19 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle an up-vote — separate from isSubmitting so votes don't block other actions */
+  /**
+   * vote on a shout — after confirmed POST (302), increment count locally.
+   * server-side rendering doesn't reflect the vote immediately on re-fetch,
+   * so we update the local state. this matches Last.fm's own JS behavior.
+   */
   async function voteShout(permalink: string): Promise<void> {
     if (!csrfToken || isVoting) return;
 
     setIsVoting(true);
     try {
       await postVoteUtil(permalink, csrfToken);
-      const data = await fetchShoutboxData(fetchUrl);
-      setShouts(data.shouts);
-      setPagination(data.pagination);
-      if (data.csrfToken) setCsrfToken(data.csrfToken);
+      /** POST confirmed (302 = success) — increment locally */
+      setShouts((prev) => incrementVote(prev, permalink));
     } catch (error) {
       console.warn(`useShoutbox: failed to vote on permalink=${permalink}`, error);
     } finally {
