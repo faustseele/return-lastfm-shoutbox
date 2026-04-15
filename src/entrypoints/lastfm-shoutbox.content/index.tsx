@@ -44,14 +44,16 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
 
   async main(ctx: ContentScriptContext): Promise<void> {
+    console.log('[rlfs] main() started on', window.location.href);
     const isEnabled = await enabledState.getValue();
-    if (!isEnabled) return;
+    if (!isEnabled) { console.log('[rlfs] disabled, exiting'); return; }
 
     let currentUi: ShadowRootContentScriptUi<HTMLDivElement> | null = null;
     let currentErrorIndicator: HTMLElement | null = null;
     let inFlightAbort: AbortController | null = null;
 
     async function injectShoutbox(): Promise<void> {
+      console.log('[rlfs] injectShoutbox() called for', window.location.pathname);
       /** abort any in-flight injection from a previous navigation */
       if (inFlightAbort) inFlightAbort.abort();
       const abort = new AbortController();
@@ -214,15 +216,22 @@ export default defineContentScript({
      */
     let lastUrl = window.location.href;
     let navTimeout: ReturnType<typeof setTimeout>;
+    let pollAlive = true;
     const urlPoll = setInterval(() => {
       const currentUrl = window.location.href;
       if (currentUrl !== lastUrl) {
+        console.log('[rlfs] URL changed:', lastUrl, '->', currentUrl);
         lastUrl = currentUrl;
         clearTimeout(navTimeout);
         navTimeout = setTimeout(() => injectShoutbox(), 500);
       }
     }, 300);
-    ctx.onInvalidated(() => clearInterval(urlPoll));
+    ctx.onInvalidated(() => {
+      console.log('[rlfs] context invalidated, stopping poll');
+      pollAlive = false;
+      clearInterval(urlPoll);
+    });
+    console.log('[rlfs] poll started, initial URL:', lastUrl);
 
     /** listen for reload message from popup */
     browser.runtime.onMessage.addListener((message: unknown) => {
