@@ -119,11 +119,10 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle vote (upvote or downvote based on current state), then re-fetch */
+  /** toggle vote — concurrent votes allowed since each targets a different shout */
   async function voteShout(permalink: string, hasVoted: boolean): Promise<void> {
-    if (!csrfToken || isVoting) return;
+    if (!csrfToken) return;
 
-    setIsVoting(true);
     try {
       await postVoteUtil(permalink, csrfToken, hasVoted);
       const data = await fetchShoutboxData(fetchUrl);
@@ -132,8 +131,6 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
       if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn(`useShoutbox: failed to vote on permalink=${permalink}`, error);
-    } finally {
-      setIsVoting(false);
     }
   }
 
