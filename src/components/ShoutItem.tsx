@@ -85,17 +85,24 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
               type="button"
               onClick={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                /** instant visual feedback — toggle heart + animation before server roundtrip */
+                /** instant visual feedback — toggle heart, count, animation before server roundtrip */
                 btn.classList.remove('rlfs-shout__vote-btn--pulse');
                 void btn.offsetWidth;
                 btn.classList.add('rlfs-shout__vote-btn--pulse');
                 btn.classList.toggle('rlfs-shout__vote-btn--active');
                 const heart = btn.querySelector('.rlfs-shout__vote-heart');
                 if (heart) heart.textContent = shout.hasVoted ? '🤎' : '❤️';
+                const countEl = btn.querySelector('.rlfs-shout__vote-count');
+                if (countEl) {
+                  const delta = shout.hasVoted ? -1 : 1;
+                  const newCount = Math.max(0, shout.voteCount + delta);
+                  countEl.textContent = newCount > 0 ? String(newCount) : '';
+                }
                 onVote(shout.permalink, shout.hasVoted);
               }}
             >
-              <span class="rlfs-shout__vote-heart">{shout.hasVoted ? '❤️' : '🤎'}</span> {shout.voteCount > 0 ? shout.voteCount : ''}
+              <span class="rlfs-shout__vote-heart">{shout.hasVoted ? '❤️' : '🤎'}</span>{' '}
+              <span class="rlfs-shout__vote-count">{shout.voteCount > 0 ? shout.voteCount : ''}</span>
             </button>
           )}
         </div>
