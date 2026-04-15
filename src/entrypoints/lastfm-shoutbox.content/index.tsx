@@ -57,8 +57,8 @@ export default defineContentScript({
       const abort = new AbortController();
       inFlightAbort = abort;
 
-      /** clear stale status — wrapped in try/catch since context can be invalidated on extension reload */
-      try { await lastStatus.setValue(''); } catch { return; }
+      /** clear stale status — ignore if storage call fails (e.g. context invalidated) */
+      try { await lastStatus.setValue(''); } catch {}
 
       /** clean up previous injection */
       if (currentUi) {
