@@ -208,14 +208,21 @@ export default defineContentScript({
     await injectShoutbox();
 
     /**
-     * re-inject on client-side navigation — debounce 300ms to let Last.fm's pjax
-     * finish swapping the DOM before we look for the join button
+     * detect SPA navigation via URL polling — wxt:locationchange doesn't fire for
+     * Last.fm's pjax pushState calls (isolated world can't intercept main world).
+     * debounce 500ms after detecting a change to let pjax finish DOM swap.
      */
+    let lastUrl = window.location.href;
     let navTimeout: ReturnType<typeof setTimeout>;
-    ctx.addEventListener(window, 'wxt:locationchange', () => {
-      clearTimeout(navTimeout);
-      navTimeout = setTimeout(() => injectShoutbox(), 300);
-    });
+    const urlPoll = setInterval(() => {
+      const currentUrl = window.location.href;
+      if (currentUrl !== lastUrl) {
+        lastUrl = currentUrl;
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(() => injectShoutbox(), 500);
+      }
+    }, 300);
+    ctx.onInvalidated(() => clearInterval(urlPoll));
 
     /** listen for reload message from popup */
     browser.runtime.onMessage.addListener((message: unknown) => {
