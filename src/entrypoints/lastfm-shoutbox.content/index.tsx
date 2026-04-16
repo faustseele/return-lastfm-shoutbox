@@ -176,6 +176,12 @@ export default defineContentScript({
           },
         });
 
+        /** clear the "Loading shoutbox..." text + styles before mounting the real UI */
+        if (usedJoinButton && createdContainer instanceof HTMLElement) {
+          createdContainer.textContent = '';
+          createdContainer.removeAttribute('style');
+        }
+
         ui.mount();
         currentUi = ui;
         try { await lastStatus.setValue(`Active on ${window.location.pathname}`); } catch {}
