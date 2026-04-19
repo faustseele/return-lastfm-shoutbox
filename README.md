@@ -8,7 +8,7 @@ Works on artist, album, track, and user pages. Read and write shouts without lea
 
 ## Install
 
-- [Chrome Web Store](#) *(coming soon)*
+- [Chrome Web Store](https://chromewebstore.google.com/detail/ninidoanmelkdbjffncpeiddcceaopkk) — install now
 - [Firefox Add-ons](#) *(coming soon)*
 
 ## What it does
@@ -48,7 +48,7 @@ MIT
 
 ## Установка
 
-- [Chrome Web Store](#) *(скоро)*
+- [Chrome Web Store](https://chromewebstore.google.com/detail/ninidoanmelkdbjffncpeiddcceaopkk) — установить
 - [Firefox Add-ons](#) *(скоро)*
 
 ## Что делает
