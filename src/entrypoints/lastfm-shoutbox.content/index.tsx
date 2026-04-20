@@ -57,8 +57,8 @@ export default defineContentScript({
       const abort = new AbortController();
       inFlightAbort = abort;
 
-      /** clear stale status from previous page */
-      await lastStatus.setValue('');
+      /** clear stale status — ignore if storage call fails (e.g. context invalidated) */
+      try { await lastStatus.setValue(''); } catch {}
 
       /** clean up previous injection */
       if (currentUi) {
@@ -87,7 +87,12 @@ export default defineContentScript({
       let savedJoinButton: Element | null = null;
       let createdContainer: Element | null = null;
 
-      const lazyShoutbox = document.querySelector('div#shoutbox[data-lazy-load-content]');
+      /**
+       * only use the lazy-load container if we're actually on a user page URL —
+       * during pjax navigation, stale DOM from the previous page can linger
+       */
+      const isUserUrl = window.location.pathname.startsWith('/user/');
+      const lazyShoutbox = isUserUrl ? document.querySelector('div#shoutbox[data-lazy-load-content]') : null;
       let joinButton = document.querySelector('a.btn-shouts-join');
 
       /** on SPA navigation, Last.fm renders the page async — wait for the join button to appear */
@@ -119,6 +124,7 @@ export default defineContentScript({
         if (!href) return;
 
         shoutboxUrl = href;
+        /** use the full shoutbox page URL — partial endpoints 404 for music entities */
         fetchUrl = href;
 
         savedJoinButton = joinButton;
@@ -170,14 +176,20 @@ export default defineContentScript({
           },
         });
 
+        /** clear the "Loading shoutbox..." text + styles before mounting the real UI */
+        if (usedJoinButton && createdContainer instanceof HTMLElement) {
+          createdContainer.textContent = '';
+          createdContainer.removeAttribute('style');
+        }
+
         ui.mount();
         currentUi = ui;
-        await lastStatus.setValue(`Active on ${window.location.pathname}`);
+        try { await lastStatus.setValue(`Active on ${window.location.pathname}`); } catch {}
       } catch (error) {
         if (abort.signal.aborted) return;
         console.warn('lastfm-shoutbox: failed to load shoutbox', error);
         const message = error instanceof Error ? error.message : 'unknown error';
-        await lastStatus.setValue(`Error: ${message}`);
+        try { await lastStatus.setValue(`Error: ${message}`); } catch {}
 
         if (usedLazyPath) {
           /** restore original container so Last.fm's native lazy-loader can take over */
@@ -206,10 +218,22 @@ export default defineContentScript({
 
     await injectShoutbox();
 
-    /** re-inject on client-side navigation — wxt:locationchange catches pushState/replaceState */
-    ctx.addEventListener(window, 'wxt:locationchange', () => {
-      injectShoutbox();
-    });
+    /**
+     * detect SPA navigation via URL polling — wxt:locationchange doesn't fire for
+     * Last.fm's pjax pushState calls (isolated world can't intercept main world).
+     * debounce 500ms after detecting a change to let pjax finish DOM swap.
+     */
+    let lastUrl = window.location.href;
+    let navTimeout: ReturnType<typeof setTimeout>;
+    const urlPoll = setInterval(() => {
+      const currentUrl = window.location.href;
+      if (currentUrl !== lastUrl) {
+        lastUrl = currentUrl;
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(() => injectShoutbox(), 500);
+      }
+    }, 300);
+    ctx.onInvalidated(() => clearInterval(urlPoll));
 
     /** listen for reload message from popup */
     browser.runtime.onMessage.addListener((message: unknown) => {

@@ -4,7 +4,7 @@ import { ShoutItem } from './ShoutItem';
 interface ShoutListProps {
   shouts: Shout[];
   onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
-  onVote?: (permalink: string) => Promise<void>;
+  onVote?: (permalink: string, hasVoted: boolean) => Promise<void>;
   onDelete?: (permalink: string) => Promise<void>;
 }
 

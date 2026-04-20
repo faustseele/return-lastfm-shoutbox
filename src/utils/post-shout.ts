@@ -32,7 +32,7 @@ export async function postShout(actionUrl: string, csrfToken: string, body: stri
  * csrfToken: from the page's hidden input
  * throws on failure.
  */
-export async function postVote(actionUrl: string, csrfToken: string): Promise<void> {
+export async function postVote(actionUrl: string, csrfToken: string, hasVoted: boolean): Promise<void> {
   const response = await fetch(actionUrl, {
     method: 'POST',
     headers: {
@@ -40,6 +40,7 @@ export async function postVote(actionUrl: string, csrfToken: string): Promise<vo
     },
     body: new URLSearchParams({
       csrfmiddlewaretoken: csrfToken,
+      submit_action: hasVoted ? 'downvote' : 'upvote',
     }),
   });
 

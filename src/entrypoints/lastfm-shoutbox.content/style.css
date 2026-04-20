@@ -128,7 +128,7 @@
   padding: 0;
   cursor: pointer;
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
 }
 
@@ -267,7 +267,7 @@
 
 .rlfs-shout__actions {
   display: flex;
-  gap: 8px;
+  gap: 11px;
   margin-top: 6px;
   align-items: center;
 }
@@ -278,7 +278,7 @@
   padding: 0;
   cursor: pointer;
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   font-family: inherit;
 }
 
@@ -291,17 +291,32 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  color: #999;
   font-size: 14px;
   font-family: inherit;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .rlfs-shout__vote-btn:hover {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
+/** user has voted on this shout */
 .rlfs-shout__vote-btn--active {
-  color: #d51007;
+  opacity: 1;
+}
+
+.rlfs-shout__vote-btn--pulse {
+  animation: rlfs-heart-pulse 0.35s ease;
+}
+
+@keyframes rlfs-heart-pulse {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.85); }
+  100% { transform: scale(1); }
 }
 
 .rlfs-shout__reply-form {

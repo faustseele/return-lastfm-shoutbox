@@ -6,7 +6,7 @@ interface ShoutItemProps {
   shout: Shout;
   isNested?: boolean;
   onReply?: (shoutId: string, permalink: string, text: string) => Promise<void>;
-  onVote?: (permalink: string) => Promise<void>;
+  onVote?: (permalink: string, hasVoted: boolean) => Promise<void>;
   onDelete?: (permalink: string) => Promise<void>;
 }
 
@@ -40,7 +40,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
 
   return (
     <div class={rootClass}>
-      <div class="rlfs-shout__avatar-col">
+      <a class="rlfs-shout__avatar-col" href={shout.authorUrl}>
         {shout.avatarUrl ? (
           <img
             class="rlfs-shout__avatar"
@@ -52,7 +52,7 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
             {shout.author.charAt(0).toUpperCase()}
           </div>
         )}
-      </div>
+      </a>
       <div class="rlfs-shout__content">
         <div class="rlfs-shout__header">
           <a class="rlfs-shout__author" href={shout.authorUrl}>
@@ -76,16 +76,33 @@ export function ShoutItem({ shout, isNested = false, onReply, onVote, onDelete }
               type="button"
               onClick={() => setRepliesExpanded((prev) => !prev)}
             >
-              Reactions {replyCount}
+              {replyCount} {replyCount === 1 ? 'reaction' : 'reactions'}
             </button>
           )}
           {onVote && (
             <button
-              class={`rlfs-shout__vote-btn${shout.voteCount > 0 ? ' rlfs-shout__vote-btn--active' : ''}`}
+              class={`rlfs-shout__vote-btn${shout.hasVoted ? ' rlfs-shout__vote-btn--active' : ''}`}
               type="button"
-              onClick={() => onVote(shout.permalink)}
+              onClick={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                /** instant visual feedback — toggle heart, count, animation before server roundtrip */
+                btn.classList.remove('rlfs-shout__vote-btn--pulse');
+                void btn.offsetWidth;
+                btn.classList.add('rlfs-shout__vote-btn--pulse');
+                btn.classList.toggle('rlfs-shout__vote-btn--active');
+                const heart = btn.querySelector('.rlfs-shout__vote-heart');
+                if (heart) heart.textContent = shout.hasVoted ? '🤎' : '❤️';
+                const countEl = btn.querySelector('.rlfs-shout__vote-count');
+                if (countEl) {
+                  const delta = shout.hasVoted ? -1 : 1;
+                  const newCount = Math.max(0, shout.voteCount + delta);
+                  countEl.textContent = newCount > 0 ? String(newCount) : '';
+                }
+                onVote(shout.permalink, shout.hasVoted);
+              }}
             >
-              ❤️ {shout.voteCount > 0 ? shout.voteCount : ''}
+              <span class="rlfs-shout__vote-heart">{shout.hasVoted ? '❤️' : '🤎'}</span>{' '}
+              <span class="rlfs-shout__vote-count">{shout.voteCount > 0 ? shout.voteCount : ''}</span>
             </button>
           )}
         </div>

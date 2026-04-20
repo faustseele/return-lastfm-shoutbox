@@ -14,8 +14,7 @@ export async function deleteShout(actionUrl: string, csrfToken: string): Promise
     },
     body: new URLSearchParams({
       csrfmiddlewaretoken: csrfToken,
-      ajax: '1',
-      confirm: '1',
+      submit_action: 'delete',
     }),
   });
 

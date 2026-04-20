@@ -19,7 +19,7 @@ interface UseShoutboxResult {
   submitError: string | null;
   postShout: (text: string) => Promise<void>;
   postReply: (shoutId: string, permalink: string, text: string) => Promise<void>;
-  voteShout: (permalink: string) => Promise<void>;
+  voteShout: (permalink: string, hasVoted: boolean) => Promise<void>;
   deleteShout: (permalink: string) => Promise<void>;
 }
 
@@ -119,21 +119,18 @@ export function useShoutbox(initialData: ShoutboxData, fetchUrl: string, shoutbo
     }
   }
 
-  /** toggle an up-vote — separate from isSubmitting so votes don't block other actions */
-  async function voteShout(permalink: string): Promise<void> {
-    if (!csrfToken || isVoting) return;
+  /** toggle vote — concurrent votes allowed since each targets a different shout */
+  async function voteShout(permalink: string, hasVoted: boolean): Promise<void> {
+    if (!csrfToken) return;
 
-    setIsVoting(true);
     try {
-      await postVoteUtil(permalink, csrfToken);
+      await postVoteUtil(permalink, csrfToken, hasVoted);
       const data = await fetchShoutboxData(fetchUrl);
       setShouts(data.shouts);
       setPagination(data.pagination);
       if (data.csrfToken) setCsrfToken(data.csrfToken);
     } catch (error) {
       console.warn(`useShoutbox: failed to vote on permalink=${permalink}`, error);
-    } finally {
-      setIsVoting(false);
     }
   }
 
